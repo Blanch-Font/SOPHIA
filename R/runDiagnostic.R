@@ -89,12 +89,12 @@ runDiagnostic <- function(cdm_bbdd,
       useHfrs = FALSE,
       temporalStartDays = c(-9999, -365, -180, -30, -365, -30, 0, 1, 31, -9999),
       temporalEndDays = c(0,          0, 0, 0, -31, -1, 0, 30, 365, 9999)),
-    minCellCount = 0,
-    overwrite = TRUE)
+    minCellCount = 0)
   cohortTableNames <- CohortGenerator::getCohortTableNames(cohortTable = cohortTable)
   CohortGenerator::dropCohortStatsTables(connection = cdm_bbdd,
                                          cohortDatabaseSchema = results_sc,
                                          cohortTableNames = cohortTableNames)
-  CohortDiagnostics::createMergedResultsFile(exportFolder)
+  CohortDiagnostics::createMergedResultsFile(exportFolder,
+                                             overwrite = TRUE)
   return("Fet")
 }
