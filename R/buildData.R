@@ -641,7 +641,8 @@ transformToFlat <- function(covariateData){
     variable = dplyr::if_else(.data$covariateId == 3020460751706, 'CRP', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 3001122748706, 'Ferritin', .data$variable),
     variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3016723, 'Creatinine', .data$variable),
-    variable = dplyr::if_else(.data$covariateId == 201820211, 'TimeT2DM', .data$variable))
+    variable = dplyr::if_else(.data$covariateId == 201820211, 'TimeT2DM', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 201254212, 'TimeT1DM', .data$variable))
   bbdd_covar <- dplyr::group_by(.data = bbdd_covar, .data$rowId, .data$variable)
   bbdd_covar <- dplyr::summarise(
     .data = bbdd_covar,
