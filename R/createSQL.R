@@ -64,12 +64,12 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Diabetes Diagnosis",
     includeDescendants = TRUE)
-  DMDx_hist <- Capr::createConceptSetExpression(
-    conceptSet = Capr::getConceptIdDetails(conceptIds = c(40769338, 43021173, 42539022, 46270562),
-                                           connection = cdm_bbdd,
-                                           vocabularyDatabaseSchema = cdm_schema),
-    Name = "History of Diabetes Diagnosis",
-    includeDescendants = TRUE)
+  # DMDx_hist <- Capr::createConceptSetExpression(
+  #   conceptSet = Capr::getConceptIdDetails(conceptIds = c(40769338, 43021173, 42539022, 46270562),
+  #                                          connection = cdm_bbdd,
+  #                                          vocabularyDatabaseSchema = cdm_schema),
+  #   Name = "History of Diabetes Diagnosis",
+  #   includeDescendants = TRUE)
   # DMDx_hist@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
   #Secondary Diabetes Diagnosis
   SecondDMDx <- Capr::createConceptSetExpression(
@@ -208,7 +208,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   #DMDx Condition Occurrence Query
   DM2DxQuery <- Capr::createConditionOccurrence(conceptSetExpression = DM2Dx)
   #DMDx_hist Condition Occurrence Query
-  DMDx_histQuery <- Capr::createConditionOccurrence(conceptSetExpression = DMDx_hist)
+  # DMDx_histQuery <- Capr::createConditionOccurrence(conceptSetExpression = DMDx_hist)
   #SecondDMDx Condition Occurrence Query
   SecondDMDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = SecondDMDx)
 
@@ -380,7 +380,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
     Name = "T1DM",
     PrimaryCriteria = PrimaryCriteria,
     # AdditionalCriteria = AdditionalCriteria)#,
-    InclusionRules = InclusionRules,
+    # InclusionRules = InclusionRules,
     CensoringCriteria = CensoringCriteria,
     # EndStrategy = EsCovidDiag,
     CohortEra = cohortEra)
