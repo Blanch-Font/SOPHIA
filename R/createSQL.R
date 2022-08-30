@@ -58,13 +58,13 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   # # arreglo errors del paquet
   # DMDx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
   # Nova versio
-  DM2Dx <- Capr::createConceptSetExpressionCustom(
+  DM2Dx <- Capr::createConceptSetExpression(
     conceptSet = Capr::getConceptIdDetails(conceptIds = c(201826, 443732, 40482801, 40485020),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Diabetes Diagnosis",
     includeDescendants = TRUE)
-  DMDx_hist <- Capr::createConceptSetExpression(
+  DM2Dx_hist <- Capr::createConceptSetExpression(
     conceptSet = Capr::getConceptIdDetails(conceptIds = c(40769338, 43021173, 42539022, 46270562),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
