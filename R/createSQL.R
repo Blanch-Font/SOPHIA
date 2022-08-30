@@ -64,7 +64,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Diabetes Diagnosis",
     includeDescendants = TRUE)
-  DM2Dx_hist <- Capr::createConceptSetExpression(
+  DMDx_hist <- Capr::createConceptSetExpression(
     conceptSet = Capr::getConceptIdDetails(conceptIds = c(40769338, 43021173, 42539022, 46270562),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
