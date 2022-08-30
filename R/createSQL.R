@@ -33,7 +33,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   # Definicions del Capr (https://ohdsi.github.io/Capr/articles/complex-cohort-example.html)
   #Type 1 Diabetes Diagnosis
   T1Dx <- Capr::createConceptSetExpression(
-    conceptSet = Capr::getConceptIdDetails(conceptIds = c(201254, 435216, 40484648),
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(201254, 435216, 40484648, 40484649),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Type 1 Diabetes Diagnosis",
@@ -42,21 +42,28 @@ CreateSQL_T1DM <- function(cdm_bbdd,
 
   # Type 2 Diabetes segons Covid19CharacterizationCharybdis
   # <-- S'ha de posar en l'ordre que et dóna el getConceptIdDetails
-  conceptMapping <- Capr::createConceptMapping(
-    n = 9,
-    includeDescendants = rep(T, 9),      # <--
-    isExcluded = c(T, T, F, T, F, F, T, T, T)) # <--
-  DMDx <- Capr::createConceptSetExpressionCustom(
-    conceptSet = Capr::getConceptIdDetails(conceptIds = c(201820, 442793, 443238,
-                                                          201254, 435216, 4058243, 40484648,
-                                                          #Afegit mirant atlas-phenotype
-                                                          195771, 761051), #diabetis secondaria
+  # conceptMapping <- Capr::createConceptMapping(
+  #   n = 9,
+  #   includeDescendants = rep(T, 9),      # <--
+  #   isExcluded = c(T, T, F, T, F, F, T, T, T)) # <--
+  # DMDx <- Capr::createConceptSetExpressionCustom(
+  #   conceptSet = Capr::getConceptIdDetails(conceptIds = c(201820, 442793, 443238,
+  #                                                         201254, 435216, 4058243, 40484648,
+  #                                                         #Afegit mirant atlas-phenotype
+  #                                                         195771, 761051), #diabetis secondaria
+  #                                          connection = cdm_bbdd,
+  #                                          vocabularyDatabaseSchema = cdm_schema),
+  #   Name = "Diabetes Diagnosis",
+  #   conceptMapping = conceptMapping)
+  # # arreglo errors del paquet
+  # DMDx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
+  # Nova versio
+  DM2Dx <- Capr::createConceptSetExpressionCustom(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(201826, 443732, 40482801, 40485020),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Diabetes Diagnosis",
-    conceptMapping = conceptMapping)
-  # # arreglo errors del paquet
-  # DMDx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
+    includeDescendants = TRUE)
   DMDx_hist <- Capr::createConceptSetExpression(
     conceptSet = Capr::getConceptIdDetails(conceptIds = c(40769338, 43021173, 42539022, 46270562),
                                            connection = cdm_bbdd,
@@ -199,7 +206,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   #T1Rx Drug Exposure Query
   T1RxQuery <- Capr::createDrugExposure(conceptSetExpression = T1Rx)
   #DMDx Condition Occurrence Query
-  DMDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = DMDx)
+  DM2DxQuery <- Capr::createConditionOccurrence(conceptSetExpression = DM2Dx)
   #DMDx_hist Condition Occurrence Query
   DMDx_histQuery <- Capr::createConditionOccurrence(conceptSetExpression = DMDx_hist)
   #SecondDMDx Condition Occurrence Query
@@ -250,18 +257,18 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                           demographicCriteriaList = list(AgeAtt),
                                           Groups = NULL)
 
-  # No T1Dx at any point in patient history
+  # No T2Dx at any point in patient history
   tl1 <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = "All",
                                                                StartCoeff = "Before",
                                                                EndDays = "All",
                                                                EndCoeff = "After"))
-  noDMDxCount <- Capr::createCount(Query = DMDxQuery,
+  noDM2DxCount <- Capr::createCount(Query = DM2DxQuery,
                                    Logic = "exactly",
                                    Count = 0L,
                                    Timeline = tl1)
-  noDMDxGroup <- Capr::createGroup(Name = "No Diagnosis of Type 2 Diabetes",
-                                   type = "ALL",
-                                   criteriaList = list(noDMDxCount))
+  noDM2DxGroup <- Capr::createGroup(Name = "No Diagnosis of Type 2 Diabetes",
+                                    type = "ALL",
+                                    criteriaList = list(noDM2DxCount))
 
   tlprev <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = "All",
                                                                   StartCoeff = "Before",
@@ -347,7 +354,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
 
   InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
                                                Contents = list(Age18AndOlderGroup,
-                                                               noDMDxGroup,
+                                                               noDM2DxGroup,
                                                                noSecondDMDxGroup,
                                                                noRenalDxGroup,
                                                                noSchizophreniaDxGroup,
