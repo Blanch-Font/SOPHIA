@@ -380,7 +380,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
     Name = "T1DM",
     PrimaryCriteria = PrimaryCriteria,
     # AdditionalCriteria = AdditionalCriteria)#,
-    # InclusionRules = InclusionRules,
+    InclusionRules = InclusionRules,
     CensoringCriteria = CensoringCriteria,
     # EndStrategy = EsCovidDiag,
     CohortEra = cohortEra)
