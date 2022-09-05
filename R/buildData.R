@@ -659,10 +659,10 @@ transformToFlat <- function(covariateData){
     values_from = 'covariateValue')
   bbdd_covar <- dplyr::mutate(
     .data = bbdd_covar,
-    dplyr::across(dplyr::any_of(c('sex_female', 'sex_male', 'T2DM', 'obesity', 'angor', 'tia', 'stroke',
-                                  'ami', 'Current', 'Former', 'Never',
-                                  'A10', 'A10A', 'A10B','C01', 'C02', 'C03', 'C07', 'C08', 'C09', 'C10',
-                                  'M01A',
+    dplyr::across(dplyr::any_of(c('sex_female', 'sex_male', 'T2DM', 'obesity', 'angor', 'tia',
+                                  'stroke', 'ami', 'Current', 'Former', 'Never',
+                                  'A10', 'A10A', 'A10B','C01', 'C02', 'C03', 'C07', 'C08', 'C09',
+                                  'C10', 'M01A',
                                   'COPD', 'CKD', 'cancer', 'depress', 'htn', 'hf', 'liver', 'ra',
                                   'sleep_apnea', 'pcos')),
                   ~ tidyr::replace_na(.x, 0)))
@@ -676,6 +676,10 @@ transformToFlat <- function(covariateData){
     # ami = dplyr::if_else(is.na(ami), 0, ami),
     # Current = dplyr::if_else(is.na(Current), 0, Current),
     # Former = dplyr::if_else(is.na(Former), 0, Former))
+  bbdd_covar <- dplyr::mutate(
+    .data = bbdd_covar,
+    TimeT1DM_diag = TimeT1DM,
+    TimeT1DM = pmax(TimeT1DM, TimeT1Rx, na.rm = T))
   return(bbdd_covar)
 }
 
