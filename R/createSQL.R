@@ -257,23 +257,24 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                           demographicCriteriaList = list(AgeAtt),
                                           Groups = NULL)
 
-  # No T2Dx at any point in patient history
+  # Time periods
   tl1 <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = "All",
                                                                StartCoeff = "Before",
                                                                EndDays = "All",
                                                                EndCoeff = "After"))
-  noDM2DxCount <- Capr::createCount(Query = DM2DxQuery,
-                                   Logic = "exactly",
-                                   Count = 0L,
-                                   Timeline = tl1)
-  noDM2DxGroup <- Capr::createGroup(Name = "No Diagnosis of Type 2 Diabetes",
-                                    type = "ALL",
-                                    criteriaList = list(noDM2DxCount))
-
   tlprev <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = "All",
                                                                   StartCoeff = "Before",
                                                                   EndDays = 0L,
                                                                   EndCoeff = "After"))
+  # No T2Dx at any point in patient history
+  noDM2DxCount <- Capr::createCount(Query = DM2DxQuery,
+                                   Logic = "exactly",
+                                   Count = 0L,
+                                   Timeline = tlprev)
+                                   # Timeline = tl1)
+  noDM2DxGroup <- Capr::createGroup(Name = "No Diagnosis of Type 2 Diabetes",
+                                    type = "ALL",
+                                    criteriaList = list(noDM2DxCount))
 
   # No SecondDMDx at any point previous to DM in patient history
   noSecondDMDxCount <- Capr::createCount(Query = SecondDMDxQuery,
@@ -354,7 +355,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
 
   InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
                                                Contents = list(Age18AndOlderGroup,
-                                                               # noDM2DxGroup,
+                                                               noDM2DxGroup,
                                                                noSecondDMDxGroup,
                                                                noRenalDxGroup,
                                                                noSchizophreniaDxGroup,
