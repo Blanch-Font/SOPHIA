@@ -441,6 +441,7 @@ buildData <- function(cdm_bbdd,
 
   T2DM_TimeCovSet <- createT2DM_TimeCovariateSettings(useT2DM_Time = TRUE)
   T1DM_TimeCovSet <- createT1DM_TimeCovariateSettings(useT1DM_Time = TRUE)
+  T1Rx_TimeCovSet <- createT1Rx_TimeCovariateSettings(useT1Rx_Time = TRUE)
 
   covariateSettings <- list(covDemo,
                             covMeasValueAny,
@@ -466,7 +467,8 @@ buildData <- function(cdm_bbdd,
                             covDrug,
                             SmokingCovSet,
                             T2DM_TimeCovSet,
-                            T1DM_TimeCovSet)
+                            T1DM_TimeCovSet,
+                            T1Rx_TimeCovSet)
 
   covariateData <- FeatureExtraction::getDbCovariateData(
     connection = cdm_bbdd,
