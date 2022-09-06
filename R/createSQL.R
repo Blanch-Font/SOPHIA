@@ -355,7 +355,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
 
   InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
                                                Contents = list(Age18AndOlderGroup,
-                                                               noDM2DxGroup,
+                                                               # noDM2DxGroup,
                                                                noSecondDMDxGroup,
                                                                noRenalDxGroup,
                                                                noSchizophreniaDxGroup,
