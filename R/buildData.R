@@ -441,7 +441,7 @@ buildData <- function(cdm_bbdd,
 
   T2DM_TimeCovSet <- createT2DM_TimeCovariateSettings(useT2DM_Time = TRUE)
   T1DM_TimeCovSet <- createT1DM_TimeCovariateSettings(useT1DM_Time = TRUE)
-  T1Rx_TimeCovSet <- createT1Rx_TimeCovariateSettings(useT1Rx_Time = TRUE)
+  # T1Rx_TimeCovSet <- createT1Rx_TimeCovariateSettings(useT1Rx_Time = TRUE)
 
   covariateSettings <- list(covDemo,
                             covMeasValueAny,
@@ -467,8 +467,7 @@ buildData <- function(cdm_bbdd,
                             covDrug,
                             SmokingCovSet,
                             T2DM_TimeCovSet,
-                            T1DM_TimeCovSet,
-                            T1Rx_TimeCovSet)
+                            T1DM_TimeCovSet)
 
   covariateData <- FeatureExtraction::getDbCovariateData(
     connection = cdm_bbdd,
@@ -644,8 +643,7 @@ transformToFlat <- function(covariateData){
     variable = dplyr::if_else(.data$covariateId == 3001122748706, 'Ferritin', .data$variable),
     variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3016723, 'Creatinine', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 201820211, 'TimeT2DM', .data$variable),
-    variable = dplyr::if_else(.data$covariateId == 201254212, 'TimeT1DM', .data$variable),
-    variable = dplyr::if_else(.data$covariateId == 1596977212, 'TimeT1Rx', .data$variable))
+    variable = dplyr::if_else(.data$covariateId == 201254212, 'TimeT1DM', .data$variable))
   bbdd_covar <- dplyr::group_by(.data = bbdd_covar, .data$rowId, .data$variable)
   bbdd_covar <- dplyr::summarise(
     .data = bbdd_covar,
@@ -676,10 +674,10 @@ transformToFlat <- function(covariateData){
     # ami = dplyr::if_else(is.na(ami), 0, ami),
     # Current = dplyr::if_else(is.na(Current), 0, Current),
     # Former = dplyr::if_else(is.na(Former), 0, Former))
-  bbdd_covar <- dplyr::mutate(
-    .data = bbdd_covar,
-    TimeT1DM_diag = TimeT1DM,
-    TimeT1DM = pmax(TimeT1DM, TimeT1Rx, na.rm = T))
+  # bbdd_covar <- dplyr::mutate(
+  #   .data = bbdd_covar,
+  #   TimeT1DM_diag = TimeT1DM,
+  #   TimeT1DM = pmax(TimeT1DM, TimeT1Rx, na.rm = T))
   return(bbdd_covar)
 }
 

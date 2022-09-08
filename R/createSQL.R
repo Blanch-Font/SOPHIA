@@ -62,7 +62,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
     conceptSet = Capr::getConceptIdDetails(conceptIds = c(201826, 443732, 40482801, 40485020),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
-    Name = "Diabetes Diagnosis",
+    Name = "Type 2 Diabetes Diagnosis",
     includeDescendants = TRUE)
   # DMDx_hist <- Capr::createConceptSetExpression(
   #   conceptSet = Capr::getConceptIdDetails(conceptIds = c(40769338, 43021173, 42539022, 46270562),
@@ -87,17 +87,18 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   #                               connection = cdm_bbdd,
   #                               vocabularyDatabaseSchema = cdm_schema,
   #                               mapToStandard = TRUE) %>%
-  T1DRxNormCodes <- paste(c(1596977, 19058398, 19078552, 19078559, 19095211, 19095212, 19112791,
-                            19133793, 19135264, 21076306, 21086042, 35410536, 35412958, 40051377,
-                            40052768, 42479783, 42481504, 42481541, 42899447, 42902356, 42902587,
-                            42902742, 42902821, 42902945, 42903059, 44058584, 46233969, 46234047,
-                            46234234, 46234237))
-  T1Rx <- Capr::createConceptSetExpression(
-    conceptSet = Capr::getConceptIdDetails(conceptIds = T1DRxNormCodes,
-                                           connection = cdm_bbdd,
-                                           vocabularyDatabaseSchema = cdm_schema),
-    Name = "Type 1 Diabetes Medications",
-    includeDescendants = TRUE)
+  # Medicació Insulina Fora
+  # T1DRxNormCodes <- paste(c(1596977, 19058398, 19078552, 19078559, 19095211, 19095212, 19112791,
+  #                           19133793, 19135264, 21076306, 21086042, 35410536, 35412958, 40051377,
+  #                           40052768, 42479783, 42481504, 42481541, 42899447, 42902356, 42902587,
+  #                           42902742, 42902821, 42902945, 42903059, 44058584, 46233969, 46234047,
+  #                           46234234, 46234237))
+  # T1Rx <- Capr::createConceptSetExpression(
+  #   conceptSet = Capr::getConceptIdDetails(conceptIds = T1DRxNormCodes,
+  #                                          connection = cdm_bbdd,
+  #                                          vocabularyDatabaseSchema = cdm_schema),
+  #   Name = "Type 1 Diabetes Medications",
+  #   includeDescendants = TRUE)
   # T1Rx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
 
   # End-stage kidney disease
@@ -203,8 +204,8 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   # Building Queries
   #T1Dx Condition Occurrence Query
   T1DxQuery <- Capr::createConditionOccurrence(conceptSetExpression = T1Dx)
-  #T1Rx Drug Exposure Query
-  T1RxQuery <- Capr::createDrugExposure(conceptSetExpression = T1Rx)
+  # #T1Rx Drug Exposure Query
+  # T1RxQuery <- Capr::createDrugExposure(conceptSetExpression = T1Rx)
   #DMDx Condition Occurrence Query
   DM2DxQuery <- Capr::createConditionOccurrence(conceptSetExpression = DM2Dx)
   #DMDx_hist Condition Occurrence Query
@@ -241,8 +242,8 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   ## + the presence of an abnormal lab
   PrimaryCriteria <- Capr::createPrimaryCriteria(
     Name = "T1DM",
-    ComponentList = list(T1DxQuery,
-                         T1RxQuery),
+    ComponentList = list(T1DxQuery),
+                         # T1RxQuery),
     ObservationWindow = Capr::createObservationWindow(PriorDays = 0L,
                                                       PostDays = 0L),
     Limit = "All")
@@ -266,11 +267,15 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                                                   StartCoeff = "Before",
                                                                   EndDays = 0L,
                                                                   EndCoeff = "After"))
+  tlafte <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = 0L,
+                                                                  StartCoeff = "Before",
+                                                                  EndDays = "All",
+                                                                  EndCoeff = "After"))
   # No T2Dx at any point in patient history
   noDM2DxCount <- Capr::createCount(Query = DM2DxQuery,
                                    Logic = "exactly",
                                    Count = 0L,
-                                   Timeline = tlprev)
+                                   Timeline = tlafte)
                                    # Timeline = tl1)
   noDM2DxGroup <- Capr::createGroup(Name = "No Diagnosis of Type 2 Diabetes",
                                     type = "ALL",
@@ -362,8 +367,8 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                                                noSeizureDxGroup,
                                                                noMaligNeoDxGroup,
                                                                noCortiRxGroup,
-                                                               noEatingDisorderDxGroup,
-                                                               noSymptomsHyperglycaemiaDxGroup),
+                                                               noEatingDisorderDxGroup),
+                                                               # noSymptomsHyperglycaemiaDxGroup),
                                                Limit = "First")
 
   #################################################################################################
@@ -373,7 +378,10 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                                      ComponentList = list(RenalDxQuery,
                                                                           SchizophreniaDxQuery,
                                                                           SeizureDxQuery,
-                                                                          MaligNeoDxQuery))
+                                                                          MaligNeoDxQuery,
+                                                                          CortiRxQuery,
+                                                                          EatingDisorderDxQuery))#,
+                                                                          # SymptomsHyperglycaemiaDxQuery))
   # La data d'entrada mínima és 2010-01-01, els anteriors són prevalents.
   # Assegurem que tenim almenys 5 anys de seguiment
   cohortEra <- Capr::createCohortEra(LeftCensorDate = "2009-12-31")
