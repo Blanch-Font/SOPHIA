@@ -359,7 +359,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                                criteriaList = list(noSymptomsHyperglycaemiaDxCount))
 
   InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
-                                               Contents = list(Age18AndOlderGroup,
+                                               Contents = list(#Age18AndOlderGroup,
                                                                # noDM2DxGroup,
                                                                noSecondDMDxGroup,
                                                                noRenalDxGroup,
