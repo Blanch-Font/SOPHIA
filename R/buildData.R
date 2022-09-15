@@ -131,7 +131,10 @@ buildData <- function(cdm_bbdd,
                       domainConceptId = "condition_concept_id",
                       domainStartDate = "condition_start_date",
                       domainEndDate = "condition_start_date"),
-    includedCovariateConceptIds = c(321318, 315296, 4127089),
+    includedCovariateConceptIds = c(#I20
+      321318, #Angina pectoris
+      315296, #Preinfarction syndrome
+      4127089), #Coronary artery spasm,
     addDescendantsToInclude = FALSE)
 
   ami_vars <- FeatureExtraction::createAnalysisDetails(
@@ -147,13 +150,36 @@ buildData <- function(cdm_bbdd,
                       domainConceptId = "condition_concept_id",
                       domainStartDate = "condition_start_date",
                       domainEndDate = "condition_start_date"),
-    includedCovariateConceptIds = c(#I21
-      312327, 4296653, 45766075, 45766116, 4296653, 4270024, 4329847,
-      #I22
-      4108217, 4108677, 4108218, 45766241, 45766114, 45766114,
-      #I23
-      4329847, 4108678, 438172, 4119953, 4108679, 4108219, 4108220, 4108680,
-      4198141),
+    includedCovariateConceptIds = c(312327, #Acute myocardial infarction
+                                    4296653, #Acute ST segment elevation myocardial infarction
+                                    45766075, #Acute anterior ST segment elevation myocardial infarction
+                                    45766116, #Acute ST segment elevation myocardial infarction of inferior wall
+                                    4296653, #Acute ST segment elevation myocardial infarction
+                                    4270024, #Acute non-ST segment elevation myocardial infarction
+                                    4329847, #Myocardial infarction
+                                    #I22
+                                    4108217, #Subsequent myocardial infarction
+                                    4108677, #Subsequent myocardial infarction of anterior wall
+                                    4108218, #Subsequent myocardial infarction of inferior wall
+                                    45766241, #Subsequent non-ST segment elevation myocardial infarction
+                                    45766114, #Subsequent ST segment elevation myocardial infarction
+                                    #I23
+                                    4108678, #Hemopericardium due to and following acute myocardial infarction
+                                    438172, #Atrial septal defect due to and following acute myocardial infarction
+                                    4119953, #Post-infarction ventricular septal defect
+                                    4108679, #Rupture of cardiac wall without hemopericardium as current complication following acute myocardial infarction
+                                    4108219, #Rupture of chordae tendinae due to and following acute myocardial infarction
+                                    4108220, #Rupture of papillary muscle as current complication following acute myocardial infarction
+                                    4108680, #Thrombosis of atrium, auricular appendage, and ventricle due to and following acute myocardial infarction
+                                    4198141, #Post infarct angina
+                                    # Altres
+                                    434376, #Acute myocardial infarction of anterior wall
+                                    438170, #	Acute myocardial infarction of inferior wall
+                                    4176969, #Sequelae of cardiovascular disorders
+                                    37309626, #Myocardial infarction due to demand ischemia
+                                    43020460, #Acute ST segment elevation myocardial infarction involving left anterior descending coronary artery
+                                    46270162, #	Acute ST segment elevation myocardial infarction due to left coronary artery occlusion
+                                    46270163),
     addDescendantsToInclude = FALSE)
 
   stroke_vars <- FeatureExtraction::createAnalysisDetails(
@@ -171,10 +197,38 @@ buildData <- function(cdm_bbdd,
                       domainEndDate = "condition_start_date"),
     includedCovariateConceptIds = c(
       #I63
-      443454, 4110189, 4110190, 4043731, 4110192, 4108356, 443454, 4111714,
+      443454, #Cerebral infarction
+      4110189, #Cerebral infarct due to thrombosis of precerebral arteries
+      4110190, #Cerebral infarction due to embolism of precerebral arteries
+      4043731, #Infarction - precerebral
+      4110192, #Cerebral infarction due to thrombosis of cerebral arteries
+      4108356, #Cerebral infarction due to embolism of cerebral arteries
+      4111714, #Cerebral infarction due to cerebral venous thrombosis, non-pyogenic
       #I64
       #I65
-      43022059, 4153380, 4159164, 443239),
+      43022059, #Disease of non-coronary systemic artery
+      4153380, #Disorder of carotid artery
+      4159164, #Disorder of basilar artery
+      443239, #Precerebral arterial occlusion
+      #Altres
+      255919, #Finding of head and neck region
+      313226, #Carotid artery occlusion
+      321887, #Disorder of artery
+      381316, #Cerebrovascular accident
+      381591, #Cerebrovascular disease
+      4006294, #Basilar artery embolism
+      4028073, #Disorder of artery of neck
+      4213731, #Carotid artery embolism
+      4273526, #Vertebral artery thrombosis
+      4274969, #Vertebral artery embolism
+      4288310, #Carotid artery obstruction
+      4311124, #Carotid artery thrombosis
+      4338227, #Basilar artery thrombosis
+      45767658, #Cerebral infarction due to thrombosis of middle cerebral artery
+      45772786, #Cerebral infarction due to embolism of middle cerebral artery
+      46270031, #Cerebral infarction due to occlusion of precerebral artery
+      46273649 #Cerebral infarction due to occlusion of basilar artery
+    ),
     addDescendantsToInclude = FALSE)
 
   TIA_vars <- FeatureExtraction::createAnalysisDetails(
@@ -191,10 +245,23 @@ buildData <- function(cdm_bbdd,
                       domainStartDate = "condition_start_date",
                       domainEndDate = "condition_start_date"),
     includedCovariateConceptIds = c(#G45
-      373503,
-      437306, 4338523, 381036, 4112020, 4048785,
+      373503, #Transient cerebral ischemia
+      437306, #Transient global amnesia
+      4338523, #Amaurosis fugax
+      381036, #	Multiple AND bilateral precerebral artery stenosis
+      4112020, #Carotid artery syndrome hemispheric
+      4048785, #Vertebrobasilar territory transient ischemic attack
       #G46
-      381591, 4110194, 4108360, 4110195, 4111710, 4111711, 4045737, 4045738, 4046360),
+      381591, #Cerebrovascular disease
+      4110194, #Middle cerebral artery syndrome
+      4108360, #Anterior cerebral artery syndrome
+      4110195, #Posterior cerebral artery syndrome
+      4111710, #Brainstem stroke syndrome
+      4111711, #Cerebellar stroke syndrome
+      4045737, #Pure motor lacunar infarction
+      4045738, #Pure sensory lacunar infarction
+      4046360 #Lacunar infarction
+    ),
     addDescendantsToInclude = FALSE)
 
   COPD_vars <- FeatureExtraction::createAnalysisDetails(
@@ -382,6 +449,161 @@ buildData <- function(cdm_bbdd,
                       domainEndDate = "condition_start_date"),
     includedCovariateConceptIds = c(201254, 435216, 40484648, 40484649),
     addDescendantsToInclude = TRUE)
+
+  nephro_vars <- FeatureExtraction::createAnalysisDetails(
+    analysisId = 128,
+    sqlFileName = "DomainConcept.sql",
+    parameters = list(analysisId = 128,
+                      analysisName = "Nephropathy due to DM",
+                      startDay = "anyTimePrior",
+                      endDay = 0,
+                      subType = "all",
+                      domainId = "Condition",
+                      domainTable = "condition_occurrence",
+                      domainConceptId = "condition_concept_id",
+                      domainStartDate = "condition_start_date",
+                      domainEndDate = "condition_start_date"),
+    includedCovariateConceptIds = c(192279, #Disorder of kidney due to diabetes mellitus
+                                    200687, #Renal disorder due to type 1 diabetes mellitus
+                                    443731, #Renal disorder due to type 2 diabetes mellitus
+                                    43531578 #Chronic kidney disease due to type 2 diabetes mellitus
+    ),
+    addDescendantsToInclude = FALSE)
+
+  retino_vars <- FeatureExtraction::createAnalysisDetails(
+    analysisId = 129,
+    sqlFileName = "DomainConcept.sql",
+    parameters = list(analysisId = 129,
+                      analysisName = "Retinopathy due to DM",
+                      startDay = "anyTimePrior",
+                      endDay = 0,
+                      subType = "all",
+                      domainId = "Condition",
+                      domainTable = "condition_occurrence",
+                      domainConceptId = "condition_concept_id",
+                      domainStartDate = "condition_start_date",
+                      domainEndDate = "condition_start_date"),
+    includedCovariateConceptIds = c(376114, #Severe nonproliferative retinopathy due to diabetes mellitus
+                                    376979, #Cataract due to diabetes mellitus
+                                    377552, #Moderate nonproliferative retinopathy due to diabetes mellitus
+                                    378743, #Mild nonproliferative retinopathy due to diabetes mellitus
+                                    380096, #	Proliferative retinopathy due to diabetes mellitus
+                                    380097, #	Macular edema due to diabetes mellitus
+                                    443733, #Disorder of eye due to type 2 diabetes mellitus
+                                    443767, #Disorder of eye due to diabetes mellitus
+                                    4174977, #Retinopathy due to diabetes mellitus
+                                    4221495, #Cataract due to diabetes mellitus type 2
+                                    4225656, #Cataract due to diabetes mellitus type 1
+                                    4227210, #Retinopathy due to type 1 diabetes mellitus
+                                    4266637, #Severe nonproliferative retinopathy without macular edema due to diabetes mellitus
+                                    4290822, #Severe nonproliferative retinopathy with clinically significant macular edema due to diabetes mellitus
+                                    4338896, #Traction retinal detachment involving macula
+                                    4338897, #Combined traction and rhegmatogenous retinal detachment
+                                    4338901, #Traction detachment of retina due to diabetes mellitus
+                                    37016179, #Mild nonproliferative retinopathy due to type 1 diabetes mellitus
+                                    37016180, #Moderate nonproliferative retinopathy due to type 1 diabetes mellitus
+                                    42538169, #Disorder of eye due to type 1 diabetes mellitus
+                                    43530656, #Nonproliferative retinopathy due to type 2 diabetes mellitus
+                                    43530685, #Proliferative retinopathy due to type 2 diabetes mellitus
+                                    45757435, #	Mild nonproliferative retinopathy due to type 2 diabetes mellitus
+                                    45763583, #Nonproliferative diabetic retinopathy due to type 1 diabetes mellitus
+                                    45763584, #Proliferative retinopathy due to type 1 diabetes mellitus
+                                    45769873, #Traction detachment of retina due to type 1 diabetes mellitus
+                                    45770830, #Macular edema and retinopathy due to type 2 diabetes mellitus
+                                    45770881, #Moderate nonproliferative retinopathy due to type 2 diabetes mellitus
+                                    45773064 #Traction detachment of retina due to type 2 diabetes mellitus
+    ),
+    addDescendantsToInclude = FALSE)
+
+  neuro_vars <- FeatureExtraction::createAnalysisDetails(
+    analysisId = 130,
+    sqlFileName = "DomainConcept.sql",
+    parameters = list(analysisId = 130,
+                      analysisName = "Neuropathy due to DM",
+                      startDay = "anyTimePrior",
+                      endDay = 0,
+                      subType = "all",
+                      domainId = "Condition",
+                      domainTable = "condition_occurrence",
+                      domainConceptId = "condition_concept_id",
+                      domainStartDate = "condition_start_date",
+                      domainEndDate = "condition_start_date"),
+    includedCovariateConceptIds = c(376065, #Disorder of nervous system due to type 2 diabetes mellitus
+                                    376112, #Polyneuropathy due to diabetes mellitus
+                                    377821, #Disorder of nervous system due to type 1 diabetes mellitus
+                                    443730, #Disorder of nervous system due to diabetes mellitus
+                                    4044391, #Neuropathy due to diabetes mellitus
+                                    4048028, #Diabetic mononeuropathy
+                                    4140466, #Lumbosacral radiculoplexus neuropathy due to type 2 diabetes mellitus
+                                    4143857, #Lumbosacral radiculoplexus neuropathy due to type 1 diabetes mellitus
+                                    4175440, #Autonomic neuropathy due to diabetes mellitus
+                                    4191611, #Lumbosacral radiculoplexus neuropathy due to diabetes mellitus
+                                    4222415, #Mononeuropathy due to type 2 diabetes mellitus
+                                    4225055, #Mononeuropathy due to type 1 diabetes mellitus
+                                    37016767, #Autonomic neuropathy due to type 1 diabetes mellitus
+                                    37016768, #Autonomic neuropathy due to type 2 diabetes mellitus
+                                    37017431, #Polyneuropathy due to type 1 diabetes mellitus
+                                    37017432 #Polyneuropathy due to type 2 diabetes mellitus
+    ),
+    addDescendantsToInclude = FALSE)
+
+  PAD_vars <- FeatureExtraction::createAnalysisDetails(
+    analysisId = 131,
+    sqlFileName = "DomainConcept.sql",
+    parameters = list(analysisId = 131,
+                      analysisName = "PAD",
+                      startDay = "anyTimePrior",
+                      endDay = 0,
+                      subType = "all",
+                      domainId = "Condition",
+                      domainTable = "condition_occurrence",
+                      domainConceptId = "condition_concept_id",
+                      domainStartDate = "condition_start_date",
+                      domainEndDate = "condition_start_date"),
+    includedCovariateConceptIds = c(
+      74719, #Ulcer of foot
+      134380, #Erythromelalgia
+      # 138525, #Pain in limb
+      195834, #Atherosclerosis of renal artery
+      197304, #Ulcer of lower extremity
+      312934, #Atherosclerosis of aorta
+      314965, #Embolism and thrombosis of an arm or leg artery
+      315558, #Atherosclerosis of arteries of the extremities
+      317577, #Arteriosclerotic gangrene
+      318443, #Arteriosclerotic vascular disease
+      321052, #Peripheral vascular disease
+      321882, #Generalized atherosclerosis
+      442287, #Rest pain
+      442774, #Intermittent claudication
+      443358, #Ulcer of heel
+      443593, #Ulcer of thigh
+      4171556, #Ankle ulcer
+      4177703, #Ulcer
+      4316222, #Venous intermittent claudication
+      4325344, #Pain at rest due to peripheral vascular disease
+      35611566, #Bilateral lower limb atherosclerosis pain at rest co-occurrent and due to atherosclerosis
+      35615028, #Bilateral atherosclerosis of lower limbs with gangrene
+      36712805, #Pain at rest of left lower limb co-occurrent and due to atherosclerosis
+      36712806, #Intermittent claudication of right lower limb co-occurrent and due to atherosclerosis
+      36712807, #Pain at rest of right lower limb co-occurrent and due to atherosclerosis
+      36712963, #Gangrene of left lower limb due to atherosclerosis
+      36717006, #Intermittent claudication of bilateral lower limbs co-occurrent and due to atherosclerosis
+      36717279, #Gangrene of right lower limb due to atherosclerosis
+      36717286, #Intermittent claudication of left lower limb co-occurrent and due to atherosclerosis
+      37110250, #Atherosclerosis of artery of lower limb
+      37312519, #Ulcer of calf due to atherosclerosis of artery of lower limb
+      37312520, #Ischemic foot ulcer due to atherosclerosis of artery of lower limb
+      37312524, #Ulcer of ankle due to atherosclerosis of artery of lower limb
+      37312529, #Intermittent claudication due to atherosclerosis of artery of limb
+      37312531, #Gangrene of limb due to atherosclerosis of artery of limb
+      40479625, #Atherosclerosis of artery
+      40483538, #Atherosclerosis of bypass graft of limb
+      40484541, #Atherosclerosis of autologous vein bypass graft of limb
+      40484551, #Atherosclerosis of nonautologous biological bypass graft of limb
+      44782819, #Chronic occlusion of artery of extremity
+      46271459 #Atherosclerosis of bypass graft of lower limb
+    ),
+    addDescendantsToInclude = FALSE)
 
   A10_conceptId <- c(21600712,
                      782681, 793321, 1502829, 1502830, 1503327, 1525221, 1529352,
