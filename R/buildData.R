@@ -896,7 +896,8 @@ transformToFlat <- function(covariateData){
                                   'A10', 'A10A', 'A10B','C01', 'C02', 'C03', 'C07', 'C08', 'C09',
                                   'C10', 'M01A',
                                   'COPD', 'CKD', 'cancer', 'depress', 'htn', 'hf', 'liver', 'ra',
-                                  'sleep_apnea', 'pcos')),
+                                  'sleep_apnea', 'pcos',
+                                  "neuro", "nephro", "retino", "PAD")),
                   ~ tidyr::replace_na(.x, 0)))
     # sex_female = dplyr::if_else(is.na(sex_female), 0, sex_female),
     # sex_male = dplyr::if_else(is.na(sex_male), 0, sex_male),
@@ -1359,7 +1360,7 @@ buildFollowUp <- function(cdm_bbdd,
                                                                 resultSc = results_sc,
                                                                 cohortTable = cohortTable))
 
-  cohort_event <- cohort[cohort$COHORT_DEFINITION_ID %in% c(acohortId, 3:6),]
+  cohort_event <- cohort[cohort$COHORT_DEFINITION_ID %in% c(acohortId, 3:10),]
   cohort_event$event <- as.character(NA)
   cohort_event$event[cohort_event$COHORT_DEFINITION_ID == acohortId] <- 'dintro'
   cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 3] <- 'AMI'
