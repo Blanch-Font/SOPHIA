@@ -1533,7 +1533,7 @@ getDbuseC10_TimeCovariateData <- function(connection,
 #' @examples
 #' #Not yet
 createHTNRx_TimeCovariateSettings <- function(useHTNRx_Time = TRUE){
-  covariateSettings <- list(useC10_Time = useHTNRx_Time)
+  covariateSettings <- list(useHTNRx_Time = useHTNRx_Time)
   attr(covariateSettings, "fun") <- "getDbuseHTNRx_TimeCovariateData"
   class(covariateSettings) <- "covariateSettings"
   return(covariateSettings)
