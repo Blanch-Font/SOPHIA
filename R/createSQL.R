@@ -1151,10 +1151,17 @@ CreateSQL_angor <- function(cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Angor Diagnosis",
     includeDescendants = FALSE)
+  CodisForaDx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(36712983, 40481132, 40482638, 43021857),
+                                           connection = cdm_bbdd,
+                                           vocabularyDatabaseSchema = cdm_schema),
+    Name = "Codis Fora Diagnosis",
+    includeDescendants = FALSE)
 
   #################################################################################################
   # Building Queries
   AngorDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = AngorDx)
+  CodisForaDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = CodisForaDx)
 
   #################################################################################################
   # Creating the Initial Cohort Entry
@@ -1165,8 +1172,26 @@ CreateSQL_angor <- function(cdm_bbdd,
                                                       PostDays = 0L),
     Limit = "All")
 
+  tlprev <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = 0L,
+                                                                  StartCoeff = "Before",
+                                                                  EndDays = 0L,
+                                                                  EndCoeff = "After"))
+  # No T2Dx at any point in patient history
+  noCodisForaDxCount <- Capr::createCount(Query = CodisForaDxQuery,
+                                          Logic = "exactly",
+                                          Count = 0L,
+                                          Timeline = tlprev)
+  noCodisForaDxGroup <- Capr::createGroup(Name = "No altres codis",
+                                          type = "ALL",
+                                          criteriaList = list(noCodisForaDxCount))
+  InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
+                                               Contents = list(noCodisForaDxGroup),
+                                               Limit = "First")
+
   OUTCOME <- Capr::createCohortDefinition(Name = "OUTCOME",
-                                          PrimaryCriteria = OutcomePrimaryCriteria)
+                                          PrimaryCriteria = OutcomePrimaryCriteria,
+                                          InclusionRules = InclusionRules)
+
   # JSON
   OUTCOMEJson <- Capr::compileCohortDefinition(OUTCOME)
 
@@ -1277,10 +1302,17 @@ CreateSQL_stroke_i <- function(cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Stroke Diagnosis",
     includeDescendants = FALSE)
+  CodisForaDx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(4180169, 442752, 44782470),
+    connection = cdm_bbdd,
+    vocabularyDatabaseSchema = cdm_schema),
+    Name = "Codis Fora Diagnosis",
+    includeDescendants = FALSE)
 
   #################################################################################################
   # Building Queries
   StrokeDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = StrokeDx)
+  CodisForaDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = CodisForaDx)
 
   #################################################################################################
   # Creating the Initial Cohort Entry
@@ -1291,8 +1323,25 @@ CreateSQL_stroke_i <- function(cdm_bbdd,
                                                       PostDays = 0L),
     Limit = "All")
 
+  tlprev <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = 0L,
+                                                                  StartCoeff = "Before",
+                                                                  EndDays = 0L,
+                                                                  EndCoeff = "After"))
+  # No T2Dx at any point in patient history
+  noCodisForaDxCount <- Capr::createCount(Query = CodisForaDxQuery,
+                                          Logic = "exactly",
+                                          Count = 0L,
+                                          Timeline = tlprev)
+  noCodisForaDxGroup <- Capr::createGroup(Name = "No altres codis",
+                                          type = "ALL",
+                                          criteriaList = list(noCodisForaDxCount))
+  InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
+                                               Contents = list(noCodisForaDxGroup),
+                                               Limit = "First")
+
   OUTCOME <- Capr::createCohortDefinition(Name = "OUTCOME",
-                                          PrimaryCriteria = OutcomePrimaryCriteria)
+                                          PrimaryCriteria = OutcomePrimaryCriteria,
+                                          InclusionRules = InclusionRules)
   # JSON
   OUTCOMEJson <- Capr::compileCohortDefinition(OUTCOME)
 
@@ -1380,7 +1429,21 @@ CreateSQL_TIA <- function(cdm_bbdd,
       4111711, #Cerebellar stroke syndrome
       4045737, #Pure motor lacunar infarction
       4045738, #Pure sensory lacunar infarction
-      4046360 #Lacunar infarction
+      4046360, #Lacunar infarction
+      # Altres: I65 i I66
+      # 255919, #Finding of head and neck region
+      43022059, #Disease of non-coronary systemic artery
+      4153380, #Disorder of carotid artery
+      4353709, #Intracerebral vascular finding
+      4112023, #Occlusion and stenosis of middle cerebral artery
+      4111716, #Occlusion and stenosis of anterior cerebral artery
+      4111717, #Occlusion and stenosis of posterior cerebral artery
+      4159164, #Disorder of basilar artery
+      443239, #Precerebral arterial occlusion
+      4112024, #Occlusion and stenosis of cerebellar arteries
+      372924, #Cerebral artery occlusion
+      4028073, #Disorder of artery of neck
+      4288310 #Carotid artery obstruction
     ),# 4353709, 43022059),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
@@ -1482,11 +1545,19 @@ CreateSQL_nephro <- function(cdm_bbdd,
       vocabularyDatabaseSchema = cdm_schema),
     Name = "Nephropathy due to DM Diagnosis",
     includeDescendants = FALSE)
-  c()
+  CodisForaDx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(4202383, #Drug-induced diabetes mellitus
+                                                          195771 #Secondary diabetes mellitus
+                                                          ),
+                                           connection = cdm_bbdd,
+                                           vocabularyDatabaseSchema = cdm_schema),
+    Name = "Codis Fora Diagnosis",
+    includeDescendants = FALSE)
 
   #################################################################################################
   # Building Queries
   NephroDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = NephroDx)
+  CodisForaDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = CodisForaDx)
 
   #################################################################################################
   # Creating the Initial Cohort Entry
@@ -1497,8 +1568,25 @@ CreateSQL_nephro <- function(cdm_bbdd,
                                                       PostDays = 0L),
     Limit = "All")
 
+  tlprev <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = 0L,
+                                                                  StartCoeff = "Before",
+                                                                  EndDays = 0L,
+                                                                  EndCoeff = "After"))
+  # No T2Dx at any point in patient history
+  noCodisForaDxCount <- Capr::createCount(Query = CodisForaDxQuery,
+                                          Logic = "exactly",
+                                          Count = 0L,
+                                          Timeline = tlprev)
+  noCodisForaDxGroup <- Capr::createGroup(Name = "No altres codis",
+                                          type = "ALL",
+                                          criteriaList = list(noCodisForaDxCount))
+  InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
+                                               Contents = list(noCodisForaDxGroup),
+                                               Limit = "First")
+
   OUTCOME <- Capr::createCohortDefinition(Name = "OUTCOME",
-                                          PrimaryCriteria = OutcomePrimaryCriteria)
+                                          PrimaryCriteria = OutcomePrimaryCriteria,
+                                          InclusionRules = InclusionRules)
   # JSON
   OUTCOMEJson <- Capr::compileCohortDefinition(OUTCOME)
 
@@ -1598,16 +1686,28 @@ CreateSQL_retino <- function(cdm_bbdd,
                                                           45769873, #Traction detachment of retina due to type 1 diabetes mellitus
                                                           45770830, #Macular edema and retinopathy due to type 2 diabetes mellitus
                                                           45770881, #Moderate nonproliferative retinopathy due to type 2 diabetes mellitus
-                                                          45773064 #Traction detachment of retina due to type 2 diabetes mellitus
+                                                          45773064, #Traction detachment of retina due to type 2 diabetes mellitus
+                                                          35626043, #Severe nonproliferative retinopathy of right eye due to diabetes mellitus
+                                                          35626044, #Severe nonproliferative retinopathy of left eye due to diabetes mellitus
+                                                          4252356 #O/E - left eye proliferative diabetic retinopathy
     ),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Retinopathy due to DM Diagnosis",
     includeDescendants = FALSE)
+  CodisForaDx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(37016358, #Moderate nonproliferative retinopathy due to secondary diabetes mellitus
+                                                          195771 #Secondary diabetes mellitus
+    ),
+    connection = cdm_bbdd,
+    vocabularyDatabaseSchema = cdm_schema),
+    Name = "Codis Fora Diagnosis",
+    includeDescendants = FALSE)
 
   #################################################################################################
   # Building Queries
   RetinoDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = RetinoDx)
+  CodisForaDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = CodisForaDx)
 
   #################################################################################################
   # Creating the Initial Cohort Entry
@@ -1618,8 +1718,25 @@ CreateSQL_retino <- function(cdm_bbdd,
                                                       PostDays = 0L),
     Limit = "All")
 
+  tlprev <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = 0L,
+                                                                  StartCoeff = "Before",
+                                                                  EndDays = 0L,
+                                                                  EndCoeff = "After"))
+  # No T2Dx at any point in patient history
+  noCodisForaDxCount <- Capr::createCount(Query = CodisForaDxQuery,
+                                          Logic = "exactly",
+                                          Count = 0L,
+                                          Timeline = tlprev)
+  noCodisForaDxGroup <- Capr::createGroup(Name = "No altres codis",
+                                          type = "ALL",
+                                          criteriaList = list(noCodisForaDxCount))
+  InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
+                                               Contents = list(noCodisForaDxGroup),
+                                               Limit = "First")
+
   OUTCOME <- Capr::createCohortDefinition(Name = "OUTCOME",
-                                          PrimaryCriteria = OutcomePrimaryCriteria)
+                                          PrimaryCriteria = OutcomePrimaryCriteria,
+                                          InclusionRules = InclusionRules)
   # JSON
   OUTCOMEJson <- Capr::compileCohortDefinition(OUTCOME)
 
@@ -1712,10 +1829,18 @@ CreateSQL_neuro <- function(cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Neuropathy due to DM Diagnosis",
     includeDescendants = FALSE)
+  CodisForaDx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(195771 #Secondary diabetes mellitus
+    ),
+    connection = cdm_bbdd,
+    vocabularyDatabaseSchema = cdm_schema),
+    Name = "Codis Fora Diagnosis",
+    includeDescendants = FALSE)
 
   #################################################################################################
   # Building Queries
   NeuroDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = NeuroDx)
+  CodisForaDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = CodisForaDx)
 
   #################################################################################################
   # Creating the Initial Cohort Entry
@@ -1726,8 +1851,25 @@ CreateSQL_neuro <- function(cdm_bbdd,
                                                       PostDays = 0L),
     Limit = "All")
 
+  tlprev <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = 0L,
+                                                                  StartCoeff = "Before",
+                                                                  EndDays = 0L,
+                                                                  EndCoeff = "After"))
+  # No T2Dx at any point in patient history
+  noCodisForaDxCount <- Capr::createCount(Query = CodisForaDxQuery,
+                                          Logic = "exactly",
+                                          Count = 0L,
+                                          Timeline = tlprev)
+  noCodisForaDxGroup <- Capr::createGroup(Name = "No altres codis",
+                                          type = "ALL",
+                                          criteriaList = list(noCodisForaDxCount))
+  InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
+                                               Contents = list(noCodisForaDxGroup),
+                                               Limit = "First")
+
   OUTCOME <- Capr::createCohortDefinition(Name = "OUTCOME",
-                                          PrimaryCriteria = OutcomePrimaryCriteria)
+                                          PrimaryCriteria = OutcomePrimaryCriteria,
+                                          InclusionRules = InclusionRules)
   # JSON
   OUTCOMEJson <- Capr::compileCohortDefinition(OUTCOME)
 
@@ -1839,17 +1981,26 @@ CreateSQL_PAD <- function(cdm_bbdd,
       40483538, #Atherosclerosis of bypass graft of limb
       40484541, #Atherosclerosis of autologous vein bypass graft of limb
       40484551, #Atherosclerosis of nonautologous biological bypass graft of limb
-      44782819, #Chronic occlusion of artery of extremity
+      819, #Chronic occlusion of artery of extremity
       46271459 #Atherosclerosis of bypass graft of lower limb
       ),
     connection = cdm_bbdd,
     vocabularyDatabaseSchema = cdm_schema),
     Name = "Neuropathy due to DM Diagnosis",
     includeDescendants = FALSE)
+  CodisForaDx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(4070679, #Postthrombotic syndrome
+                                                          44782715 #Chronic peripheral venous hypertension with lower extremity complication
+    ),
+    connection = cdm_bbdd,
+    vocabularyDatabaseSchema = cdm_schema),
+    Name = "Codis Fora Diagnosis",
+    includeDescendants = FALSE)
 
   #################################################################################################
   # Building Queries
   PADDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = PADDx)
+  CodisForaDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = CodisForaDx)
 
   #################################################################################################
   # Creating the Initial Cohort Entry
@@ -1860,8 +2011,25 @@ CreateSQL_PAD <- function(cdm_bbdd,
                                                       PostDays = 0L),
     Limit = "All")
 
+  tlprev <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = 0L,
+                                                                  StartCoeff = "Before",
+                                                                  EndDays = 0L,
+                                                                  EndCoeff = "After"))
+  # No T2Dx at any point in patient history
+  noCodisForaDxCount <- Capr::createCount(Query = CodisForaDxQuery,
+                                          Logic = "exactly",
+                                          Count = 0L,
+                                          Timeline = tlprev)
+  noCodisForaDxGroup <- Capr::createGroup(Name = "No altres codis",
+                                          type = "ALL",
+                                          criteriaList = list(noCodisForaDxCount))
+  InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
+                                               Contents = list(noCodisForaDxGroup),
+                                               Limit = "First")
+
   OUTCOME <- Capr::createCohortDefinition(Name = "OUTCOME",
-                                          PrimaryCriteria = OutcomePrimaryCriteria)
+                                          PrimaryCriteria = OutcomePrimaryCriteria,
+                                          InclusionRules = InclusionRules)
   # JSON
   OUTCOMEJson <- Capr::compileCohortDefinition(OUTCOME)
 
