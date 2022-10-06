@@ -87,19 +87,39 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   #                               connection = cdm_bbdd,
   #                               vocabularyDatabaseSchema = cdm_schema,
   #                               mapToStandard = TRUE) %>%
-  # Medicació Insulina Fora
-  # T1DRxNormCodes <- paste(c(1596977, 19058398, 19078552, 19078559, 19095211, 19095212, 19112791,
-  #                           19133793, 19135264, 21076306, 21086042, 35410536, 35412958, 40051377,
-  #                           40052768, 42479783, 42481504, 42481541, 42899447, 42902356, 42902587,
-  #                           42902742, 42902821, 42902945, 42903059, 44058584, 46233969, 46234047,
-  #                           46234234, 46234237))
-  # T1Rx <- Capr::createConceptSetExpression(
-  #   conceptSet = Capr::getConceptIdDetails(conceptIds = T1DRxNormCodes,
-  #                                          connection = cdm_bbdd,
-  #                                          vocabularyDatabaseSchema = cdm_schema),
-  #   Name = "Type 1 Diabetes Medications",
-  #   includeDescendants = TRUE)
+  # Medicació Insulina
+  T1DRxNormCodes <- c(1596977, 19058398, 19078552, 19078559, 19095211, 19095212, 19112791,
+                      19133793, 19135264, 21076306, 21086042, 35410536, 35412958, 40051377,
+                      40052768, 42479783, 42481504, 42481541, 42899447, 42902356, 42902587,
+                      42902742, 42902821, 42902945, 42903059, 44058584, 46233969, 46234047,
+                      46234234, 46234237,
+                      1502905, 1513843, 1513876, 1516976, 1531601, 1544838, 1550023,
+                      1562586, 1567198, 1586346, 1586369, 1588986, 1590165, 1596977,
+                      19013926, 19013951, 19090180, 19090187, 19090204, 19090221, 19090226,
+                      19090229, 19090244, 19090247, 19090249, 19091621, 35198096, 35602717,
+                      42899447, 46221581)
+  T1Rx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = T1DRxNormCodes,
+                                           connection = cdm_bbdd,
+                                           vocabularyDatabaseSchema = cdm_schema),
+    Name = "Insulin Medications",
+    includeDescendants = TRUE)
   # T1Rx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
+
+  # Medicació A10B
+  NIADRxNormCodes <- c(793143, 793293, 1000979, 1502809, 1502826, 1502855, 1510202,
+                         1515249, 1516766, 1517998, 1525215, 1529331, 1530014,
+                         1547504, 1559684, 1560171, 1580747, 1583722, 1594973,
+                         1597756, 19001409, 19001441, 19033498, 19033909, 19035533, 19059796,
+                         19097821, 19122137, 40166035, 40170911, 40239216, 40798673,
+                         40798860, 43009020, 43009032, 43009051, 43009089, 43009094, 43013884,
+                         43526465, 44506754, 44785829, 44816332, 45774435, 45774751)
+  NIADRx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = NIADRxNormCodes,
+                                           connection = cdm_bbdd,
+                                           vocabularyDatabaseSchema = cdm_schema),
+    Name = "NIAD Medications",
+    includeDescendants = TRUE)
 
   # End-stage kidney disease
   ## End stage renal disease
@@ -204,8 +224,10 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   # Building Queries
   #T1Dx Condition Occurrence Query
   T1DxQuery <- Capr::createConditionOccurrence(conceptSetExpression = T1Dx)
-  # #T1Rx Drug Exposure Query
-  # T1RxQuery <- Capr::createDrugExposure(conceptSetExpression = T1Rx)
+  #T1Rx Drug Exposure Query
+  T1RxQuery <- Capr::createDrugExposure(conceptSetExpression = T1Rx)
+  #NIADRx Drug Exposure Query
+  NIADRxQuery <- Capr::createDrugExposure(conceptSetExpression = NIADRx)
   #DMDx Condition Occurrence Query
   DM2DxQuery <- Capr::createConditionOccurrence(conceptSetExpression = DM2Dx)
   #DMDx_hist Condition Occurrence Query
@@ -271,6 +293,23 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                                                   StartCoeff = "Before",
                                                                   EndDays = "All",
                                                                   EndCoeff = "After"))
+
+  # Insulin at any point in patient history
+  T1RxCount <- Capr::createCount(Query = T1RxQuery,
+                                    Logic = "at_least",
+                                    Count = 1,
+                                    Timeline = tlafte)
+  T1RxGroup <- Capr::createGroup(Name = "Insulin after diagnosis",
+                                 type = "ALL",
+                                 criteriaList = list(T1RxCount))
+  # No NIADRx at any point in patient history
+  noNIADRxCount <- Capr::createCount(Query = NIADRxQuery,
+                                   Logic = "exactly",
+                                   Count = 0L,
+                                   Timeline = tlafte)
+  noNIADRxGroup <- Capr::createGroup(Name = "No NIAD after diagnosis",
+                                    type = "ALL",
+                                    criteriaList = list(noNIADRxCount))
   # No T2Dx at any point in patient history
   noDM2DxCount <- Capr::createCount(Query = DM2DxQuery,
                                    Logic = "exactly",
@@ -361,6 +400,8 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
                                                Contents = list(#Age18AndOlderGroup,
                                                                # noDM2DxGroup,
+                                                               T1RxGroup,
+                                                               noNIADRxGroup,
                                                                noSecondDMDxGroup,
                                                                noRenalDxGroup,
                                                                noSchizophreniaDxGroup,
