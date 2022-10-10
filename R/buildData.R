@@ -58,6 +58,12 @@ buildData <- function(cdm_bbdd,
   lymphocytes_conceptId <- c(3019198, 43055366) #LOINC
   HbA1c_conceptId <- c(3034639, 3004410) #LOINC
   creatinine_conceptId <- c(3016723)
+  albumin_ser_conceptId <- c(3024561)
+  CKDEPI_conceptId <- c(40764999)
+  GOT_conceptId <- c(3010587)
+  GGT_conceptId <- c(3026910)
+  vitD_conceptId <- c(43055034)
+  PEPTIDCs_conceptId <- c(3010084)
   covMeasValueLong <- FeatureExtraction::createCovariateSettings(
     useMeasurementValueLongTerm = TRUE,
     longTermStartDays = 2*(-365.25),
@@ -81,7 +87,13 @@ buildData <- function(cdm_bbdd,
       monocytes_conceptId,
       lymphocytes_conceptId,
       HbA1c_conceptId,
-      creatinine_conceptId),
+      creatinine_conceptId,
+      albumin_ser_conceptId,
+      CKDEPI_conceptId,
+      GOT_conceptId,
+      GGT_conceptId,
+      vitD_conceptId,
+      PEPTIDCs_conceptId),
     addDescendantsToInclude = TRUE)
 
   T2DM_vars <- FeatureExtraction::createAnalysisDetails(
@@ -605,6 +617,43 @@ buildData <- function(cdm_bbdd,
     ),
     addDescendantsToInclude = FALSE)
 
+  dka_vars <- FeatureExtraction::createAnalysisDetails(
+    analysisId = 132,
+    sqlFileName = "DomainConcept.sql",
+    parameters = list(analysisId = 130,
+                      analysisName = "Neuropathy due to DM",
+                      startDay = "anyTimePrior",
+                      endDay = 0,
+                      subType = "all",
+                      domainId = "Condition",
+                      domainTable = "condition_occurrence",
+                      domainConceptId = "condition_concept_id",
+                      domainStartDate = "condition_start_date",
+                      domainEndDate = "condition_start_date"),
+    includedCovariateConceptIds = c(439770, #Ketoacidosis due to type 1 diabetes mellitus
+                                    4009303, #Diabetic ketoacidosis without coma
+                                    4224254 #Ketoacidotic coma due to type 1 diabetes mellitus
+    ),
+    addDescendantsToInclude = FALSE)
+
+  hypoglyc_vars <- FeatureExtraction::createAnalysisDetails(
+    analysisId = 133,
+    sqlFileName = "DomainConcept.sql",
+    parameters = list(analysisId = 130,
+                      analysisName = "Neuropathy due to DM",
+                      startDay = "anyTimePrior",
+                      endDay = 0,
+                      subType = "all",
+                      domainId = "Condition",
+                      domainTable = "condition_occurrence",
+                      domainConceptId = "condition_concept_id",
+                      domainStartDate = "condition_start_date",
+                      domainEndDate = "condition_start_date"),
+    includedCovariateConceptIds = c(45769876, #Hypoglycemia due to type 1 diabetes mellitus
+                                    4228112 #Hypoglycemic coma due to type 1 diabetes mellitus
+                                    ),
+    addDescendantsToInclude = FALSE)
+
   A10_conceptId <- c(21600712,
                      782681, 793321, 1502829, 1502830, 1503327, 1525221, 1529352,
                      1547554, 1596977, 1597761, 1597772, 1597773, 1597781, 1597792,
@@ -691,7 +740,9 @@ buildData <- function(cdm_bbdd,
                                    nephro_vars,
                                    retino_vars,
                                    neuro_vars,
-                                   PAD_vars)),
+                                   PAD_vars,
+                                   dka_vars,
+                                   hypoglyc_vars)),
                             covDrug,
                             SmokingCovSet,
                             T2DM_TimeCovSet,
@@ -845,6 +896,8 @@ transformToFlat <- function(covariateData){
     variable = dplyr::if_else(stringr::str_sub(.data$covariateId, start = -3L) == 129, 'retino', .data$variable),
     variable = dplyr::if_else(stringr::str_sub(.data$covariateId, start = -3L) == 130, 'neuro', .data$variable),
     variable = dplyr::if_else(stringr::str_sub(.data$covariateId, start = -3L) == 131, 'PAD', .data$variable),
+    variable = dplyr::if_else(stringr::str_sub(.data$covariateId, start = -3L) == 132, 'DKA', .data$variable),
+    variable = dplyr::if_else(stringr::str_sub(.data$covariateId, start = -3L) == 133, 'Hypoglyc', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 21600712411, 'A10', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 21600713411, 'A10A', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 21600744411, 'A10B', .data$variable),
@@ -876,6 +929,12 @@ transformToFlat <- function(covariateData){
     variable = dplyr::if_else(.data$covariateId == 3020460751706, 'CRP', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 3001122748706, 'Ferritin', .data$variable),
     variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3016723, 'Creatinine', .data$variable),
+    variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3024561, 'Albumin', .data$variable),
+    variable = dplyr::if_else(substr(.data$covariateId, 1, 8) == 40764999, 'CKDEPI', .data$variable),
+    variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3010587, 'GOT', .data$variable),
+    variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3026910, 'GGT', .data$variable),
+    variable = dplyr::if_else(substr(.data$covariateId, 1, 8) == 43055034, 'vitD', .data$variable),
+    variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3010084, 'PEPTIDCs', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 201820211, 'TimeT2DM', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 201254212, 'TimeT1DM', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 21601853212, 'TimeC10', .data$variable),

@@ -711,15 +711,7 @@ CreateSQL_T2DM <- function(cdm_bbdd,
     Limit = "All")
 
   #################################################################################################
-  # Inclusion Rules
-  # Inclusion with age
-  AgeAtt <- Capr::createAgeAttribute(Op = "gte", Value = 35)
-  Age35AndOlderGroup <- Capr::createGroup(Name = ">=35 years old",
-                                          type="ALL",
-                                          criteriaList = NULL,
-                                          demographicCriteriaList = list(AgeAtt),
-                                          Groups = NULL)
-
+  # Additional Rules
   # No T1Dx at any point in patient history
   tl1 <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = "All",
                                                                StartCoeff = "Before",
@@ -732,6 +724,21 @@ CreateSQL_T2DM <- function(cdm_bbdd,
   NoT1DxGroup <- Capr::createGroup(Name = "No Diagnosis of Type 1 Diabetes",
                                    type = "ALL",
                                    criteriaList = list(noT1DxCount))
+  AdditionalCriteria <- Capr::createAdditionalCriteria(
+    Name = "AC for T2DM",
+    Contents = NoT1DxGroup,
+    Limit = "First"
+  )
+
+  #################################################################################################
+  # Inclusion Rules
+  # Inclusion with age
+  AgeAtt <- Capr::createAgeAttribute(Op = "gte", Value = 35)
+  Age35AndOlderGroup <- Capr::createGroup(Name = ">=35 years old",
+                                          type="ALL",
+                                          criteriaList = NULL,
+                                          demographicCriteriaList = list(AgeAtt),
+                                          Groups = NULL)
 
   #no exposure to T1DM medication
   tl2 <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = "All",
@@ -820,7 +827,7 @@ CreateSQL_T2DM <- function(cdm_bbdd,
 
   InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
                                                Contents = list(Age35AndOlderGroup,
-                                                               NoT1DxGroup,
+                                                               # NoT1DxGroup,
                                                                NoT1RxGroup,
                                                                noSecondDMDxGroup,
                                                                noRenalDxGroup,
@@ -846,7 +853,7 @@ CreateSQL_T2DM <- function(cdm_bbdd,
   T2DMPhenotype <- Capr::createCohortDefinition(
     Name = "T2DM as Covid19CharacterizationCharybdis",
     PrimaryCriteria = PrimaryCriteria,
-    # AdditionalCriteria = AdditionalCriteria)#,
+    AdditionalCriteria = AdditionalCriteria,
     InclusionRules = InclusionRules,
     CensoringCriteria = CensoringCriteria,
     # EndStrategy = EsCovidDiag,
