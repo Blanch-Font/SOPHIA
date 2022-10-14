@@ -38,7 +38,6 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Type 1 Diabetes Diagnosis",
     includeDescendants = TRUE)
-  # T1Dx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
 
   # Type 2 Diabetes segons Covid19CharacterizationCharybdis
   # <-- S'ha de posar en l'ordre que et dóna el getConceptIdDetails
@@ -106,7 +105,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
     includeDescendants = TRUE)
   # T1Rx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
 
-  # Medicació A10B
+  # Medicació A10B excepte Metformin
   NIADRxNormCodes <- c(793143, 793293, 1000979, 1502809, 1502826, 1502855, 1510202,
                          1515249, 1516766, 1517998, 1525215, 1529331, 1530014,
                          1547504, 1559684, 1560171, 1580747, 1583722, 1594973,
@@ -264,8 +263,8 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   ## + the presence of an abnormal lab
   PrimaryCriteria <- Capr::createPrimaryCriteria(
     Name = "T1DM",
-    ComponentList = list(T1DxQuery),
-                         # T1RxQuery),
+    ComponentList = list(T1DxQuery,
+                         T1RxQuery),
     ObservationWindow = Capr::createObservationWindow(PriorDays = 0L,
                                                       PostDays = 0L),
     Limit = "All")
@@ -293,6 +292,14 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                                                   StartCoeff = "Before",
                                                                   EndDays = "All",
                                                                   EndCoeff = "After"))
+  tlafte_6m <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = 0L,
+                                                                     StartCoeff = "Before",
+                                                                     EndDays = 183L,
+                                                                     EndCoeff = "After"))
+  tlafte_1y <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = 0L,
+                                                                     StartCoeff = "Before",
+                                                                     EndDays = 365L,
+                                                                     EndCoeff = "After"))
 
   # Insulin at any point in patient history
   T1RxCount <- Capr::createCount(Query = T1RxQuery,
@@ -306,7 +313,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   noNIADRxCount <- Capr::createCount(Query = NIADRxQuery,
                                    Logic = "exactly",
                                    Count = 0L,
-                                   Timeline = tlafte)
+                                   Timeline = tl1)
   noNIADRxGroup <- Capr::createGroup(Name = "No NIAD after diagnosis",
                                     type = "ALL",
                                     criteriaList = list(noNIADRxCount))
@@ -514,36 +521,64 @@ CreateSQL_T2DM <- function(cdm_bbdd,
   # Definicions del Capr (https://ohdsi.github.io/Capr/articles/complex-cohort-example.html)
   # Type 2 Diabetes segons Covid19CharacterizationCharybdis
   # <-- S'ha de posar en l'ordre que et dóna el getConceptIdDetails
-  conceptMapping <- Capr::createConceptMapping(
-    n = 9,
-    includeDescendants = rep(T, 9),      # <--
-    isExcluded = c(T, T, F, T, F, F, T, T, T)) # <--
+  # conceptMapping <- Capr::createConceptMapping(
+  #   n = 9,
+  #   includeDescendants = rep(T, 9),      # <--
+  #   isExcluded = c(T, T, F, T, F, F, T, T, T)) # <--
+  # DMDx <- Capr::createConceptSetExpressionCustom(
+  #   conceptSet = Capr::getConceptIdDetails(conceptIds = c(201820, 442793, 443238,
+  #                                                         201254, 435216, 4058243, 40484648,
+  #                                                         #Afegit mirant atlas-phenotype
+  #                                                         195771, 761051), #diabetis secondaria
+  #                                          connection = cdm_bbdd,
+  #                                          vocabularyDatabaseSchema = cdm_schema),
+  #   Name = "Diabetes Diagnosis",
+  #   conceptMapping = conceptMapping)
+  conceptMapping <- Capr::createConceptMapping(n = 6,
+                                               includeDescendants = rep(T, 6),
+                                               isExcluded = c(T, F, F, F, T, T))
   DMDx <- Capr::createConceptSetExpressionCustom(
-    conceptSet = Capr::getConceptIdDetails(conceptIds = c(201820, 442793, 443238,
-                                                          201254, 435216, 4058243, 40484648,
-                                                          #Afegit mirant atlas-phenotype
-                                                          195771, 761051), #diabetis secondaria
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(195771, 201820, 442793, 443238, 761051, 4058243),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Diabetes Diagnosis",
     conceptMapping = conceptMapping)
-  # # arreglo errors del paquet
-  # DMDx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
   DMDx_hist <- Capr::createConceptSetExpression(
     conceptSet = Capr::getConceptIdDetails(conceptIds = c(40769338, 43021173, 42539022, 46270562),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
-    Name = "History of Diabetes Diagnosis",
+    Name = "History of DM Diagnosis",
     includeDescendants = TRUE)
-  # DMDx_hist@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
+
   #Type 1 Diabetes Diagnosis
   T1Dx <- Capr::createConceptSetExpression(
-    conceptSet = Capr::getConceptIdDetails(conceptIds = c(201254, 435216, 4058243, 40484648),
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(201254, 435216, 40484648, 40484649),
                                            connection = cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Type 1 Diabetes Diagnosis",
     includeDescendants = TRUE)
-  # T1Dx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
+
+  #Type 2 Diabetes Diagnosis
+  T2Dx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(201826, 443732, 40482801, 40485020),
+                                           connection = cdm_bbdd,
+                                           vocabularyDatabaseSchema = cdm_schema),
+    Name = "Type 2 Diabetes Diagnosis",
+    includeDescendants = TRUE)
+  conceptMapping <- Capr::createConceptMapping(n = 14,
+                                               includeDescendants = rep(T, 14),
+                                               isExcluded = c(T, T, F, T, T, F,
+                                                              F, T, T, T, T,
+                                                              T, T, T))
+  UDMDx <- Capr::createConceptSetExpressionCustom(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(195771, 201254, 201820, 201826, 435216, 442793,
+                                                          443238, 443732, 761051, 4058243, 40482801,
+                                                          40484648, 40484649, 40485020),
+                                           connection = cdm_bbdd,
+                                           vocabularyDatabaseSchema = cdm_schema),
+    Name = "Undefinded Diabetes Diagnosis",
+    conceptMapping = conceptMapping)
+
   #Secondary Diabetes Diagnosis
   SecondDMDx <- Capr::createConceptSetExpression(
     conceptSet = Capr::getConceptIdDetails(conceptIds = c(195771, 761051),
@@ -571,7 +606,21 @@ CreateSQL_T2DM <- function(cdm_bbdd,
                                            vocabularyDatabaseSchema = cdm_schema),
     Name = "Type 1 Diabetes Medications",
     includeDescendants = TRUE)
-  # T1Rx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
+
+  # Medicació A10B
+  NIADRxNormCodes <- c(793143, 793293, 1000979, 1502809, 1502826, 1502855, 1510202,
+                       1515249, 1516766, 1517998, 1525215, 1529331, 1530014,
+                       1547504, 1559684, 1560171, 1580747, 1583722, 1594973,
+                       1597756, 19001409, 19001441, 19033498, 19033909, 19035533, 19059796,
+                       19097821, 19122137, 40166035, 40170911, 40239216, 40798673,
+                       40798860, 43009020, 43009032, 43009051, 43009089, 43009094, 43013884,
+                       43526465, 44506754, 44785829, 44816332, 45774435, 45774751)
+  NIADRx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = NIADRxNormCodes,
+                                           connection = cdm_bbdd,
+                                           vocabularyDatabaseSchema = cdm_schema),
+    Name = "NIAD Medications",
+    includeDescendants = TRUE)
 
   # End-stage kidney disease
   ## End stage renal disease
@@ -672,8 +721,14 @@ CreateSQL_T2DM <- function(cdm_bbdd,
   DMDx_histQuery <- Capr::createConditionOccurrence(conceptSetExpression = DMDx_hist)
   #T1Dx Condition Occurrence Query
   T1DxQuery <- Capr::createConditionOccurrence(conceptSetExpression = T1Dx)
+  #T2Dx Condition Occurrence Query
+  T2DxQuery <- Capr::createConditionOccurrence(conceptSetExpression = T2Dx)
+  #UDMDx Condition Occurrence Query
+  UDMDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = UDMDx)
   #T1Rx Drug Exposure Query
   T1RxQuery <- Capr::createDrugExposure(conceptSetExpression = T1Rx)
+  #NIADRx Drug Exposure Query
+  NIADRxQuery <- Capr::createDrugExposure(conceptSetExpression = NIADRx)
   #SecondDMDx Condition Occurrence Query
   SecondDMDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = SecondDMDx)
 
@@ -697,75 +752,99 @@ CreateSQL_T2DM <- function(cdm_bbdd,
   CortiRxQuery <- Capr::createDrugExposure(conceptSetExpression = CortiRx)
 
   #################################################################################################
-  # Creating the Initial Cohort Entry
-  ## We defined initial entry as observed occurrence of all of the following events:
-  ## + T2DM diagnosis,
-  ## + prescription of a T2DM medication and
-  ## + the presence of an abnormal lab
-  PrimaryCriteria <- Capr::createPrimaryCriteria(
-    Name = "T2DM as Covid19CharacterizationCharybdis",
-    ComponentList = list(DMDxQuery,
-                         DMDx_histQuery),
-    ObservationWindow = Capr::createObservationWindow(PriorDays = 0L,
-                                                      PostDays = 0L),
-    Limit = "All")
-
-  #################################################################################################
-  # Additional Rules
-  # No T1Dx at any point in patient history
+  # Building Count
+  # Time Lines
+  # Qualsevol moment previ o posterior
   tl1 <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = "All",
                                                                StartCoeff = "Before",
                                                                EndDays = "All",
                                                                EndCoeff = "After"))
-  noT1DxCount <- Capr::createCount(Query = T1DxQuery,
-                                   Logic = "exactly",
-                                   Count = 0L,
-                                   Timeline = tl1)
-  NoT1DxGroup <- Capr::createGroup(Name = "No Diagnosis of Type 1 Diabetes",
-                                   type = "ALL",
-                                   criteriaList = list(noT1DxCount))
-  AdditionalCriteria <- Capr::createAdditionalCriteria(
-    Name = "AC for T2DM",
-    Contents = NoT1DxGroup,
-    Limit = "First"
-  )
-
-  #################################################################################################
-  # Inclusion Rules
-  # Inclusion with age
-  AgeAtt <- Capr::createAgeAttribute(Op = "gte", Value = 35)
-  Age35AndOlderGroup <- Capr::createGroup(Name = ">=35 years old",
-                                          type="ALL",
-                                          criteriaList = NULL,
-                                          demographicCriteriaList = list(AgeAtt),
-                                          Groups = NULL)
-
-  #no exposure to T1DM medication
+  # Primers 6 mesos
   tl2 <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = "All",
                                                                StartCoeff = "Before",
                                                                EndDays = 183L,
                                                                EndCoeff = "After"))
-  noT1RxCount <- Capr::createCount(Query = T1RxQuery,
-                                   Logic = "exactly",
-                                   Count = 0L,
-                                   Timeline = tl2)
-  NoT1RxGroup <- Capr::createGroup(Name = "Without Insulin [-inf, T2DM + 6m)",
-                                   type = "ALL",
-                                   criteriaList = list(noT1RxCount))
-
+  # Qualsevol moment previ
   tlprev <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = "All",
                                                                   StartCoeff = "Before",
                                                                   EndDays = 0L,
                                                                   EndCoeff = "After"))
+  # Qualsevol moment posterior
+  tlafte <- Capr::createTimeline(StartWindow = Capr::createWindow(StartDays = 0L,
+                                                                  StartCoeff = "Before",
+                                                                  EndDays = "All",
+                                                                  EndCoeff = "After"))
+
+
+  #at least 1 occurrence of DMDx
+  atLeast1DMDxCount <- Capr::createCount(Query = DMDxQuery,
+                                   Logic = "at_least",
+                                   Count = 1L,
+                                   Timeline = tlprev)
+  atLeast1DMDx_histCount <- Capr::createCount(Query = DMDx_histQuery,
+                                   Logic = "at_least",
+                                   Count = 1L,
+                                   Timeline = tlprev)
+  #at least 1 occurrence of T1DM
+  atLeast1T1DMCount <- Capr::createCount(Query = T1DxQuery,
+                                   Logic = "at_least",
+                                   Count = 1L,
+                                   Timeline = tl1)
+  #at least 1 occurrence of T2DM
+  atLeast1T2DMCount <- Capr::createCount(Query = T2DxQuery,
+                                         Logic = "at_least",
+                                         Count = 1L,
+                                         Timeline = tl1)
+  #at least 1 occurrence of UDM
+  atLeast1UDMCount <- Capr::createCount(Query = UDMDxQuery,
+                                        Logic = "at_least",
+                                        Count = 1L,
+                                        Timeline = tl1)
+  # No T1Dx at any point in patient history
+  noT1DxCount <- Capr::createCount(Query = T1DxQuery,
+                                   Logic = "exactly",
+                                   Count = 0L,
+                                   Timeline = tl1)
+  # No T2Dx at any point in patient history
+  noT2DxCount <- Capr::createCount(Query = T2DxQuery,
+                                   Logic = "exactly",
+                                   Count = 0L,
+                                   Timeline = tl1)
+  # No UDMDx at any point in patient history
+  noUDMDxCount <- Capr::createCount(Query = UDMDxQuery,
+                                   Logic = "exactly",
+                                   Count = 0L,
+                                   Timeline = tl1)
+  # No DMDx at any point in patient history
+  noDMDxCount <- Capr::createCount(Query = DMDxQuery,
+                                   Logic = "exactly",
+                                   Count = 0L,
+                                   Timeline = tl1)
+  # No DMDx_hist at any point in patient history
+  noDMDx_histCount <- Capr::createCount(Query = DMDx_histQuery,
+                                   Logic = "exactly",
+                                   Count = 0L,
+                                   Timeline = tl1)
+  #no exposure to T1DM medication (6 mesos després del 1r diagnòstic)
+  noT1RxCount <- Capr::createCount(Query = T1RxQuery,
+                                   Logic = "exactly",
+                                   Count = 0L,
+                                   Timeline = tl1)
+  #no exposure to T1DM medication (6 mesos després del 1r diagnòstic)
+  noT1Rx_6mCount <- Capr::createCount(Query = T1RxQuery,
+                                   Logic = "exactly",
+                                   Count = 0L,
+                                   Timeline = tl2)
+  # No NIADRx at any point in patient history
+  atLeastNIADRxCount <- Capr::createCount(Query = NIADRxQuery,
+                                          Logic = "at_least",
+                                          Count = 1L,
+                                          Timeline = tlafte)
   # No SecondDMDx at any point previous to DM in patient history
   noSecondDMDxCount <- Capr::createCount(Query = SecondDMDxQuery,
                                          Logic = "exactly",
                                          Count = 0L,
                                          Timeline = tlprev)
-  noSecondDMDxGroup <- Capr::createGroup(Name = "No previous Secondary diabetes",
-                                         type = "ALL",
-                                         criteriaList = list(noSecondDMDxCount))
-
   # No RenalDx at any point previous to DM in patient history
   noRenalDxCount <- Capr::createCount(Query = RenalDxQuery,
                                       Logic = "exactly",
@@ -775,52 +854,151 @@ CreateSQL_T2DM <- function(cdm_bbdd,
                                            Logic = "exactly",
                                            Count = 0L,
                                            Timeline = tlprev)
+  # No DepressDx at any point previous to DM in patient history
+  noDepressDxCount <- Capr::createCount(Query = DepressDxQuery,
+                                        Logic = "exactly",
+                                        Count = 0L,
+                                        Timeline = tlprev)
+  # No SchizophreniaDx at any point previous to DM in patient history
+  noSchizophreniaDxCount <- Capr::createCount(Query = SchizophreniaDxQuery,
+                                              Logic = "exactly",
+                                              Count = 0L,
+                                              Timeline = tlprev)
+  # No SeizureDx at any point previous to DM in patient history
+  noSeizureDxCount <- Capr::createCount(Query = SeizureDxQuery,
+                                        Logic = "exactly",
+                                        Count = 0L,
+                                        Timeline = tlprev)
+  # No MaligNeoDx at any point previous to DM in patient history
+  noMaligNeoDxCount <- Capr::createCount(Query = MaligNeoDxQuery,
+                                         Logic = "exactly",
+                                         Count = 0L,
+                                         Timeline = tlprev)
+  # No CortiRx at any point previous to DM in patient history
+  noCortiRxCount <- Capr::createCount(Query = CortiRxQuery,
+                                      Logic = "exactly",
+                                      Count = 0L,
+                                      Timeline = tlprev)
+
+  #################################################################################################
+  # Create Group
+  NoT1DxGroup <- Capr::createGroup(Name = "No Diagnosis of Type 1 Diabetes",
+                                   type = "ALL",
+                                   criteriaList = list(noT1DxCount))
+  DMDxGroup <- Capr::createGroup(Name = "DMDX Diagnosis",
+                                   type = "ANY",
+                                   criteriaList = list(atLeast1DMDxCount,
+                                                       atLeast1DMDx_histCount))
+  #Path 1: T2DM and no T1DM
+  Pathway_1_Group <- Capr::createGroup(
+    Name = "Pathway1",
+    Description = "only T2DMD",
+    type = "ALL",
+    criteriaList = list(atLeast1T2DMCount, noUDMDxCount, noT1DxCount))
+  #Path 2: T2DM, DMD, DMDX_hist and no T1DM
+  Pathway_2_Group <- Capr::createGroup(
+    Name = "Pathway2",
+    Description = "T2DMD, UDM and No T1DM",
+    type = "ALL",
+    criteriaList = list(atLeast1T2DMCount, atLeast1UDMCount, noT1DxCount))
+  Pathway_3_Group <- Capr::createGroup(
+    Name = "Pathway3",
+    Description = "UDM, no T2DM, No T1DM and any NIAD other than metformin",
+    type = "ALL",
+    criteriaList = list(atLeast1UDMCount, noT2DxCount, noT1DxCount, atLeastNIADRxCount))
+  Pathway_4_Group <- Capr::createGroup(
+    Name = "Pathway4",
+    Description = "T1DM and no Insuline",
+    type = "ALL",
+    criteriaList = list(atLeast1T1DMCount, noT1RxCount))
+  Pathway_5_Group <- Capr::createGroup(
+    Name = "Pathway5",
+    Description = "T1DM and any NIAD other than metformin",
+    type = "ALL",
+    criteriaList = list(atLeast1T1DMCount, atLeastNIADRxCount))
+  Pathway_6_Group <- Capr::createGroup(
+    Name = "Pathway6",
+    Description = "any NIAD other than metformin, no (DMDX or DMDX_hist)",
+    type = "ALL",
+    criteriaList = list(atLeastNIADRxCount, noDMDxCount, noDMDx_histCount))
+  Pathway_Group <- Capr::createGroup(
+    Name = "Case for T2DM using algorithm",
+    type = "ANY",
+    Groups = list(Pathway_1_Group, Pathway_2_Group, Pathway_3_Group, Pathway_4_Group,
+                  Pathway_5_Group, Pathway_6_Group)
+  )
+
+  #################################################################################################
+  # Creating the Initial Cohort Entry
+  ## We defined initial entry as observed occurrence of all of the following events:
+  ## + T2DM diagnosis,
+  ## + prescription of a T2DM medication and
+  ## + the presence of an abnormal lab
+  PrimaryCriteria <- Capr::createPrimaryCriteria(
+    Name = "T2DM as algorithm",
+    ComponentList = list(DMDxQuery,
+                         NIADRxQuery),
+    ObservationWindow = Capr::createObservationWindow(PriorDays = 0L,
+                                                      PostDays = 0L),
+    Limit = "All")
+
+  #################################################################################################
+  # Additional Rules
+  # Inclusion with age
+  AgeAtt <- Capr::createAgeAttribute(Op = "gte", Value = 35)
+  Age35AndOlderGroup <- Capr::createGroup(Name = ">=35 years old",
+                                          type="ALL",
+                                          criteriaList = NULL,
+                                          demographicCriteriaList = list(AgeAtt),
+                                          Groups = NULL)
+
+
+  AdditionalCriteria <- Capr::createAdditionalCriteria(
+    Name = "Pathway",
+    Contents = Pathway_Group,
+    Limit = "First"
+  )
+
+  #################################################################################################
+  # Inclusion Rules
+
+  #no exposure to T1DM medication
+  noT1Rx_6mGroup <- Capr::createGroup(Name = "Without Insulin [-inf, T2DM + 6m)",
+                                   type = "ALL",
+                                   criteriaList = list(noT1Rx_6mCount))
+
+  # No SecondDMDx at any point previous to DM in patient history
+  noSecondDMDxGroup <- Capr::createGroup(Name = "No previous Secondary diabetes",
+                                         type = "ALL",
+                                         criteriaList = list(noSecondDMDxCount))
+
+  # No RenalDx at any point previous to DM in patient history
   noRenalDxGroup <- Capr::createGroup(Name = "No previous Renal problems",
                                       type = "ALL",
                                       criteriaList = list(noRenalDxCount,
                                                           exactly0AbeGFRCount))
 
   # No DepressDx at any point previous to DM in patient history
-  noDepressDxCount <- Capr::createCount(Query = DepressDxQuery,
-                                        Logic = "exactly",
-                                        Count = 0L,
-                                        Timeline = tlprev)
   noDepressDxGroup <- Capr::createGroup(Name = "No previous Depression",
                                         type = "ALL",
                                         criteriaList = list(noDepressDxCount))
 
   # No SchizophreniaDx at any point previous to DM in patient history
-  noSchizophreniaDxCount <- Capr::createCount(Query = SchizophreniaDxQuery,
-                                              Logic = "exactly",
-                                              Count = 0L,
-                                              Timeline = tlprev)
   noSchizophreniaDxGroup <- Capr::createGroup(Name = "No previous Schizophrenia",
                                               type = "ALL",
                                               criteriaList = list(noSchizophreniaDxCount))
 
   # No SeizureDx at any point previous to DM in patient history
-  noSeizureDxCount <- Capr::createCount(Query = SeizureDxQuery,
-                                        Logic = "exactly",
-                                        Count = 0L,
-                                        Timeline = tlprev)
   noSeizureDxGroup <- Capr::createGroup(Name = "No previous Seizure",
                                         type = "ALL",
                                         criteriaList = list(noSeizureDxCount))
 
   # No MaligNeoDx at any point previous to DM in patient history
-  noMaligNeoDxCount <- Capr::createCount(Query = MaligNeoDxQuery,
-                                         Logic = "exactly",
-                                         Count = 0L,
-                                         Timeline = tlprev)
   noMaligNeoDxGroup <- Capr::createGroup(Name = "No previous Malignant Neoplasm",
                                          type = "ALL",
                                          criteriaList = list(noMaligNeoDxCount))
 
   # No CortiRx at any point previous to DM in patient history
-  noCortiRxCount <- Capr::createCount(Query = CortiRxQuery,
-                                      Logic = "exactly",
-                                      Count = 0L,
-                                      Timeline = tlprev)
   noCortiRxGroup <- Capr::createGroup(Name = "No previous Corticoides",
                                       type = "ALL",
                                       criteriaList = list(noCortiRxCount))
@@ -828,7 +1006,8 @@ CreateSQL_T2DM <- function(cdm_bbdd,
   InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
                                                Contents = list(Age35AndOlderGroup,
                                                                # NoT1DxGroup,
-                                                               NoT1RxGroup,
+                                                               Pathway_Group,
+                                                               noT1Rx_6mGroup,
                                                                noSecondDMDxGroup,
                                                                noRenalDxGroup,
                                                                noDepressDxGroup,
@@ -853,7 +1032,7 @@ CreateSQL_T2DM <- function(cdm_bbdd,
   T2DMPhenotype <- Capr::createCohortDefinition(
     Name = "T2DM as Covid19CharacterizationCharybdis",
     PrimaryCriteria = PrimaryCriteria,
-    AdditionalCriteria = AdditionalCriteria,
+    # AdditionalCriteria = AdditionalCriteria,
     InclusionRules = InclusionRules,
     CensoringCriteria = CensoringCriteria,
     # EndStrategy = EsCovidDiag,
