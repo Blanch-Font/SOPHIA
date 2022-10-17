@@ -1687,3 +1687,79 @@ getDbuseHTNRx_TimeCovariateData <- function(connection,
   class(result) <- "CovariateData"
   return(result)
 }
+
+#' Funcion para pasar del servidor a una tabla plana
+#' Necesita totes les coses del servidor més quina cohort volem contruir.
+#'
+#' @param acdm_bbdd A connection for a OMOP database via DatabaseConnector
+#' @param acdm_schema A name for OMOP schema
+#' @param aresults_sc A name for result schema
+#' @param acohortTable A name of the result cohort
+#' @param aacohortId A Cohort number
+#'
+#' @return List with three objects: descriptive for numeric and category and database ready to analysis.
+#' @export
+#'
+#' @examples
+#' #Not yet
+FunCovar <- function(cdm_bbdd,
+                     cdm_schema,
+                     results_sc,
+                     cohortTable,
+                     acohortId){
+  covariateData_aux <- buildData(cdm_bbdd = cdm_bbdd,
+                                 cdm_schema = cdm_schema,
+                                 results_sc = results_sc,
+                                 cohortTable = cohortTable,
+                                 acohortId = acohortId)
+  covariateData2_aux <- FeatureExtraction::aggregateCovariates(covariateData_aux)
+  sel_med_conceptId <- c(21600712, #DRUGS USED IN DIABETES
+                         #Aquestes insulines no les troba
+                         21076306, 44058584, 21086042, 21036596,
+                         21601238, #C01
+                         21600381, #C02
+                         21601461, #C03
+                         21601664, #C07
+                         21601744, #C08
+                         21601782, #C09
+                         21601853, #C10
+                         21603933 #M01A
+  )
+  cov_cate_resum_aux <- dplyr::filter(
+    .data = covariateData2_aux$covariateRef,
+    .data$analysisId %in% c(411, 413) & .data$conceptId %in% sel_med_conceptId |
+      !(.data$analysisId %in% c(411, 413)))
+  cov_cate_resum_aux <- dplyr::inner_join(
+    x = cov_cate_resum_aux,
+    y = covariateData2_aux$covariates)
+  cov_cate_resum_aux <- dplyr::mutate(
+    .data = cov_cate_resum_aux,
+    covariateId = as.character(floor(.data$covariateId)),
+    analysisId = as.integer(.data$analysisId),
+    conceptId = as.integer(.data$conceptId),
+    sumValue = as.integer(.data$sumValue),
+    averageValue = .data$averageValue*100)
+  cov_cate_resum_aux <-dplyr::collect(x = cov_cate_resum_aux)
+  cov_num_resum_aux <- dplyr::inner_join(
+    x = covariateData2_aux$covariateRef,
+    y = covariateData2_aux$covariatesContinuous)
+  cov_num_resum_aux <- dplyr::mutate(
+    .data = cov_num_resum_aux,
+    covariateId = as.character(floor(.data$covariateId)),
+    analysisId = as.integer(.data$analysisId),
+    conceptId = as.integer(.data$conceptId))
+  cov_num_resum_aux <- dplyr::select(
+    .data = cov_num_resum_aux,
+    -.data$covariateId, -.data$analysisId, -.data$conceptId)
+  cov_num_resum_aux <- dplyr::collect(x = cov_num_resum_aux)
+  bbdd_covar_aux <- transformToFlat(covariateData_aux)
+  bbdd_covar_aux <- buildFollowUp(cdm_bbdd = cdm_bbdd,
+                                  cdm_schema = cdm_schema,
+                                  results_sc = results_sc,
+                                  cohortTable = cohortTable,
+                                  acohortId = acohortId,
+                                  bbdd_covar = bbdd_covar_aux)
+  return(list(cov_cate_resum = cov_cate_resum_aux,
+              cov_num_resum = cov_num_resum_aux,
+              bbdd_covar = bbdd_covar_aux))
+}
