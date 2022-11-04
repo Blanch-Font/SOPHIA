@@ -66,16 +66,16 @@ buildData <- function(cdm_bbdd,
   PEPTIDCs_conceptId <- c(3010084)
   covMeasValueLong <- FeatureExtraction::createCovariateSettings(
     useMeasurementValueLongTerm = TRUE,
-    longTermStartDays = 2*(-365.25),
-    endDays = 0,
+    longTermStartDays = (-2)*365.25,
+    endDays = 0*365.25,
     includedCovariateConceptIds = c(
       SBP_conceptId,
       DBP_conceptId,
-      cT_conceptId,
-      cHDL_conceptId,
-      cLDL_conceptId,
-      cVLDL_conceptId,
-      Tg_conceptId,
+      # cT_conceptId,
+      # cHDL_conceptId,
+      # cLDL_conceptId,
+      # cVLDL_conceptId,
+      # Tg_conceptId,
       glu_conceptId,
       alt_conceptId,
       CRP_conceptId,
@@ -94,6 +94,17 @@ buildData <- function(cdm_bbdd,
       GGT_conceptId,
       vitD_conceptId,
       PEPTIDCs_conceptId),
+    addDescendantsToInclude = TRUE)
+  covMeasValue_lipid <- FeatureExtraction::createTemporalCovariateSettings(
+    useMeasurementValue = TRUE,
+    temporalStartDays = c(-2, 1)*365.25,
+    temporalEndDays = c(0, 2)*365.25,
+    includedCovariateConceptIds = c(
+      cT_conceptId,
+      cHDL_conceptId,
+      cLDL_conceptId,
+      cVLDL_conceptId,
+      Tg_conceptId),
     addDescendantsToInclude = TRUE)
 
   T2DM_vars <- FeatureExtraction::createAnalysisDetails(
@@ -712,13 +723,16 @@ buildData <- function(cdm_bbdd,
 
   T2DM_TimeCovSet <- createT2DM_TimeCovariateSettings(useT2DM_Time = TRUE)
   T1DM_TimeCovSet <- createT1DM_TimeCovariateSettings(useT1DM_Time = TRUE)
-  # T1Rx_TimeCovSet <- createT1Rx_TimeCovariateSettings(useT1Rx_Time = TRUE)
+  T1DM_AgeCovSet <- createT1DM_AgeCovariateSettings(useT1DM_Age = TRUE)
+  T1Rx_TimeCovSet <- createT1Rx_TimeCovariateSettings(useT1Rx_Time = TRUE)
+  T1Rx_AgeCovSet <- createT1Rx_AgeCovariateSettings(useT1Rx_Age = TRUE)
   C10_TimeCovSet <- createC10_TimeCovariateSettings(useC10_Time = TRUE)
   HTNRx_TimeCovSet <- createHTNRx_TimeCovariateSettings(useHTNRx_Time = TRUE)
 
   covariateSettings <- list(covDemo,
                             covMeasValueAny,
                             covMeasValueLong,
+                            # covMeasValue_lipid,
                             FeatureExtraction::createDetailedCovariateSettings(
                               list(T2DM_vars,
                                    obesity_vars,
@@ -747,6 +761,9 @@ buildData <- function(cdm_bbdd,
                             SmokingCovSet,
                             T2DM_TimeCovSet,
                             T1DM_TimeCovSet,
+                            T1Rx_TimeCovSet,
+                            T1DM_AgeCovSet,
+                            T1Rx_AgeCovSet,
                             C10_TimeCovSet,
                             HTNRx_TimeCovSet)
 
@@ -758,6 +775,15 @@ buildData <- function(cdm_bbdd,
     cohortId = acohortId,
     rowIdField = "subject_id",
     covariateSettings = covariateSettings)
+
+  covariateData_temp <- FeatureExtraction::getDbCovariateData(
+    connection = cdm_bbdd,
+    cdmDatabaseSchema = cdm_schema,
+    cohortDatabaseSchema = results_sc,
+    cohortTable = cohortTable,
+    cohortId = acohortId,
+    rowIdField = "subject_id",
+    covariateSettings = covMeasValue_lipid)
 
   T2DM_conceptId <- c(201530111, 201826111, 376065111, 443729111, 443731111, 443733111,
                       4193704111, 4196141111, 4221495111, 36714116111, 37016349111,
@@ -851,7 +877,7 @@ buildData <- function(cdm_bbdd,
   #   covariateId = dplyr::if_else(.data$covariateId %in% sleep_apnea_conceptId, 313459125, .data$covariateId),
   #   covariateId = dplyr::if_else(.data$covariateId %in% pcos_conceptId, 40443308126, .data$covariateId))
   # covariateData$covariates <- dplyr::distinct(covariateData$covariates)
-  return(covariateData)
+  return(list(covariateData = covariateData, covariateData_temp = covariateData_temp))
 }
 
 #' Transform covariateData object into FlatTable
@@ -859,6 +885,7 @@ buildData <- function(cdm_bbdd,
 #' Si volem agafar l'últim valor podem canviar-ho
 #'
 #' @param covariateData A covariateDate object
+#' @param covariateData_temp A Temporal covariateDate object
 #'
 #' @return A data.table with the covariate data
 #' @export
@@ -867,7 +894,8 @@ buildData <- function(cdm_bbdd,
 #'
 #' @examples
 #' #Not yet
-transformToFlat <- function(covariateData){
+transformToFlat <- function(covariateData,
+                            covariateData_temp){
   bbdd_covar <- dplyr::collect(covariateData$covariates)
   bbdd_covar <-  dplyr::mutate(
     .data = bbdd_covar,
@@ -937,16 +965,37 @@ transformToFlat <- function(covariateData){
     variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3010084, 'PEPTIDCs', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 201820211, 'TimeT2DM', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 201254212, 'TimeT1DM', .data$variable),
-    variable = dplyr::if_else(.data$covariateId == 21601853212, 'TimeC10', .data$variable),
-    variable = dplyr::if_else(.data$covariateId == 21600381212, 'TimeHTNRx', .data$variable))
+    variable = dplyr::if_else(.data$covariateId == 201254216, 'TimeT1Rx', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 201254213, 'AgeT1DM', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 201254217, 'AgeT1Rx', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 21601853214, 'TimeC10', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 21600381215, 'TimeHTNRx', .data$variable))
   bbdd_covar <- dplyr::group_by(.data = bbdd_covar, .data$rowId, .data$variable)
   bbdd_covar <- dplyr::summarise(
     .data = bbdd_covar,
     covariateValue = mean(.data$covariateValue),
     .groups = 'keep')
   bbdd_covar <- dplyr::ungroup(x = bbdd_covar)
+  bbdd_covar_temp <- dplyr::collect(covariateData_temp$covariates)
+  bbdd_covar_temp <-  dplyr::mutate(
+    .data = bbdd_covar_temp,
+    variable = as.character(NA),
+    variable = dplyr::if_else(.data$covariateId == 3027114840702 & .data$timeId == 1, 'cT', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 3011884840702 & .data$timeId == 1, 'cHDL', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 3028437840702 & .data$timeId == 1, 'cLDL', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 3022192840702 & .data$timeId == 1, 'Tg', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 3027114840702 & .data$timeId == 2, 'cT_1y', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 3011884840702 & .data$timeId == 2, 'cHDL_1y', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 3028437840702 & .data$timeId == 2, 'cLDL_1y', .data$variable),
+    variable = dplyr::if_else(.data$covariateId == 3022192840702 & .data$timeId == 2, 'Tg_1y', .data$variable))
+  bbdd_covar_temp <- dplyr::group_by(.data = bbdd_covar_temp, .data$rowId, .data$variable)
+  bbdd_covar_temp <- dplyr::summarise(
+    .data = bbdd_covar_temp,
+    covariateValue = mean(.data$covariateValue),
+    .groups = 'keep')
+  bbdd_covar_temp <- dplyr::ungroup(x = bbdd_covar_temp)
   bbdd_covar <- tidyr::pivot_wider(
-    data = bbdd_covar,
+    data = rbind(bbdd_covar, bbdd_covar_temp),
     id_cols = 'rowId',
     names_from = 'variable',
     values_from = 'covariateValue')
@@ -1275,6 +1324,113 @@ getDbuseT1DM_TimeCovariateData <- function(connection,
   return(result)
 }
 
+#' Auxiliar function to create Age for first T1DM diagnosis
+#'
+#' @param useT1DM_Age Logical valor
+#'
+#' @return covariateSettings object
+#' @export
+#'
+#' @examples
+#' #Not yet
+createT1DM_AgeCovariateSettings <- function(useT1DM_Age = TRUE){
+  covariateSettings <- list(useT1DM_Age = useT1DM_Age)
+  attr(covariateSettings, "fun") <- "getDbuseT1DM_AgeCovariateData"
+  class(covariateSettings) <- "covariateSettings"
+  return(covariateSettings)
+}
+
+#' Auxiliar function to create Age for T1DM diagnosis status SQL implementation
+#'
+#' @param connection A connection for a OMOP database via DatabaseConnector
+#' @param oracleTempSchema Only for Oracle Database
+#' @param cdmDatabaseSchema A name for OMOP schema
+#' @param cohortTable A name of the result cohort
+#' @param cohortId A Cohort number
+#' @param cdmVersion CDM version
+#' @param rowIdField Column with the subject identification
+#' @param covariateSettings covariateSettings object generetad via FeatureExtraction
+#' @param aggregated Logical value
+#'
+#' @return Function to use with FeatureExtraction to build covariateData
+#' @export
+#'
+#' @examples
+#' #Not yet
+getDbuseT1DM_AgeCovariateData <- function(connection,
+                                           oracleTempSchema = NULL,
+                                           cdmDatabaseSchema,
+                                           cohortTable = "#cohort_person",
+                                           cohortId = -1,
+                                           cdmVersion = "5",
+                                           rowIdField = "subject_id",
+                                           covariateSettings,
+                                           aggregated = FALSE){
+  writeLines("Constructing T1DM_Age covariates")
+  if (covariateSettings$useT1DM_Age == FALSE) {
+    return(NULL)
+  }
+
+  included_sql <- SqlRender::render(sql = "SELECT *
+                                           FROM @schema_cdm.CONCEPT_ANCESTOR
+                                           WHERE ancestor_concept_id IN (@diab_id)",
+                                    schema_cdm = cdmDatabaseSchema,
+                                    diab_id = c(201254, 435216, 40484648, 40484649))
+  included_id <- DatabaseConnector::querySql(connection,
+                                             sql = included_sql)
+  # Falta afegir la data de naixement a la cohort. S'ha de fer un INNER JOIN
+  # Some SQL to construct the covariate:
+  sql <- "SELECT DISTINCT ON (cond2.person_id)
+               cond2.person_id AS row_id,
+               201254213 AS covariate_id,
+               DATEDIFF(DAY, DATEFROMPARTS(cond2.year_of_birth, cond2.month_of_birth, cond2.day_of_birth),
+                        cond2.condition_start_date)/365.25 AS covariate_value
+        FROM (SELECT cond.person_id,
+                       cond.condition_start_date,
+                       person_table.year_of_birth,
+                       person_table.month_of_birth,
+                       person_table.day_of_birth
+              FROM @cdm_database_schema.CONDITION_OCCURRENCE cond
+              INNER JOIN @cohort_table cohort
+                    ON cohort.subject_id = cond.person_id
+                    INNER JOIN @cdm_database_schema.PERSON person_table
+                          ON person_table.person_id = cohort.subject_id
+              WHERE cond.condition_start_date <= DATEADD(DAY, 0, cohort.cohort_start_date)
+                AND cond.condition_concept_id != 0
+                AND cond.condition_concept_id IN (@included_concept_table)
+                AND cohort.cohort_definition_id IN (@cohort_definition_id)) cond2
+          ORDER BY cond2.person_id, cond2.condition_start_date"
+  sql <- SqlRender::render(sql,
+                           cdm_database_schema = cdmDatabaseSchema,
+                           cohort_table = cohortTable, # ha de ser results_sc.cohortTable
+                           cohort_definition_id = cohortId,
+                           included_concept_table = included_id$DESCENDANT_CONCEPT_ID)
+  sql <- SqlRender::translate(sql, targetDialect = attr(connection, "dbms"))
+  # Retrieve the covariate:
+  covariates <- DatabaseConnector::querySql(connection, sql, snakeCaseToCamelCase = TRUE)
+  # Construct covariate reference:
+  covariateRef <- data.frame(covariateId = c(201254213),
+                             covariateName = c('Age from T1DM'),
+                             analysisId = 213,
+                             conceptId = 201254)
+  # Construct analysis reference:
+  analysisRef <- data.frame(analysisId = 213,
+                            analysisName = "Age from T1DM",
+                            domainId = "Condition",
+                            startDay = NA,
+                            endDay = 0,
+                            isBinary = "N",
+                            missingMeansZero = "N")
+  # Construct analysis reference:
+  metaData <- list(sql = sql, call = match.call())
+  result <- Andromeda::andromeda(covariates = covariates,
+                                 covariateRef = covariateRef,
+                                 analysisRef = analysisRef)
+  attr(result, "metaData") <- metaData
+  class(result) <- "CovariateData"
+  return(result)
+}
+
 #' Auxiliar function to create Time form T1DM diagnosis
 #'
 #' @param useT1Rx_Time Logical valor
@@ -1322,22 +1478,25 @@ getDbuseT1Rx_TimeCovariateData <- function(connection,
     return(NULL)
   }
 
+  vec_insulin <- c(1596977, 19058398, 19078552, 19078559, 19095211, 19095212, 19112791, 19133793,
+                   19135264, 21076306, 21086042, 35410536, 35412958, 40051377, 40052768, 42479783,
+                   42481504, 42481541, 42899447, 42902356, 42902587, 42902742, 42902821, 42902945,
+                   42903059, 44058584, 46233969, 46234047, 46234234, 46234237, 1502905, 1513843,
+                   1513876, 1516976, 1531601, 1544838, 1550023, 1562586, 1567198, 1586346, 1586369,
+                   1588986, 1590165, 1596977, 19013926, 19013951, 19090180, 19090187, 19090204,
+                   19090221, 19090226, 19090229, 19090244, 19090247, 19090249, 19091621, 35198096,
+                   35602717, 42899447, 46221581)
   included_sql <- SqlRender::render(sql = "SELECT *
                                            FROM @schema_cdm.CONCEPT_ANCESTOR
                                            WHERE ancestor_concept_id IN (@diab_id)",
                                     schema_cdm = cdmDatabaseSchema,
-                                    diab_id = c(1596977, 19058398, 19078552, 19078559, 19095211,
-                                                19095212, 19112791, 19133793, 19135264, 21076306,
-                                                21086042, 35410536, 35412958, 40051377, 40052768,
-                                                42479783, 42481504, 42481541, 42899447, 42902356,
-                                                42902587, 42902742, 42902821, 42902945, 42903059,
-                                                44058584, 46233969, 46234047, 46234234, 46234237))
+                                    diab_id = vec_insulin)
   included_id <- DatabaseConnector::querySql(connection,
                                              sql = included_sql)
   # Some SQL to construct the covariate:
   sql <- "SELECT DISTINCT ON (cond2.person_id)
                  cond2.person_id AS row_id,
-                 1596977212  AS covariate_id,
+                 201254216  AS covariate_id,
                  DATEDIFF(DAY, cond2.DRUG_EXPOSURE_START_DATE, cond2.cohort_start_date) AS covariate_value
           FROM (SELECT *
                 FROM @cdm_database_schema.DRUG_EXPOSURE cond
@@ -1357,13 +1516,128 @@ getDbuseT1Rx_TimeCovariateData <- function(connection,
   # Retrieve the covariate:
   covariates <- DatabaseConnector::querySql(connection, sql, snakeCaseToCamelCase = TRUE)
   # Construct covariate reference:
-  covariateRef <- data.frame(covariateId = c(201254212),
+  covariateRef <- data.frame(covariateId = c(201254216),
                              covariateName = c('Time from T1Rx'),
-                             analysisId = 212,
+                             analysisId = 216,
                              conceptId = 201254)
   # Construct analysis reference:
-  analysisRef <- data.frame(analysisId = 212,
+  analysisRef <- data.frame(analysisId = 216,
                             analysisName = "Time from T1Rx",
+                            domainId = "Condition",
+                            startDay = NA,
+                            endDay = 0,
+                            isBinary = "N",
+                            missingMeansZero = "N")
+  # Construct analysis reference:
+  metaData <- list(sql = sql, call = match.call())
+  result <- Andromeda::andromeda(covariates = covariates,
+                                 covariateRef = covariateRef,
+                                 analysisRef = analysisRef)
+  attr(result, "metaData") <- metaData
+  class(result) <- "CovariateData"
+  return(result)
+}
+
+#' Auxiliar function to create Age for first T1Rx drug
+#'
+#' @param useT1Rx_Age Logical valor
+#'
+#' @return covariateSettings object
+#' @export
+#'
+#' @examples
+#' #Not yet
+createT1Rx_AgeCovariateSettings <- function(useT1Rx_Age = TRUE){
+  covariateSettings <- list(useT1Rx_Age = useT1Rx_Age)
+  attr(covariateSettings, "fun") <- "getDbuseT1Rx_AgeCovariateData"
+  class(covariateSettings) <- "covariateSettings"
+  return(covariateSettings)
+}
+
+#' Auxiliar function to create Age for T1Rx diagnosis status SQL implementation
+#'
+#' @param connection A connection for a OMOP database via DatabaseConnector
+#' @param oracleTempSchema Only for Oracle Database
+#' @param cdmDatabaseSchema A name for OMOP schema
+#' @param cohortTable A name of the result cohort
+#' @param cohortId A Cohort number
+#' @param cdmVersion CDM version
+#' @param rowIdField Column with the subject identification
+#' @param covariateSettings covariateSettings object generetad via FeatureExtraction
+#' @param aggregated Logical value
+#'
+#' @return Function to use with FeatureExtraction to build covariateData
+#' @export
+#'
+#' @examples
+#' #Not yet
+getDbuseT1Rx_AgeCovariateData <- function(connection,
+                                          oracleTempSchema = NULL,
+                                          cdmDatabaseSchema,
+                                          cohortTable = "#cohort_person",
+                                          cohortId = -1,
+                                          cdmVersion = "5",
+                                          rowIdField = "subject_id",
+                                          covariateSettings,
+                                          aggregated = FALSE){
+  writeLines("Constructing T1Rx_Age covariates")
+  if (covariateSettings$useT1Rx_Age == FALSE) {
+    return(NULL)
+  }
+
+  vec_insulin <- c(1596977, 19058398, 19078552, 19078559, 19095211, 19095212, 19112791, 19133793,
+                   19135264, 21076306, 21086042, 35410536, 35412958, 40051377, 40052768, 42479783,
+                   42481504, 42481541, 42899447, 42902356, 42902587, 42902742, 42902821, 42902945,
+                   42903059, 44058584, 46233969, 46234047, 46234234, 46234237, 1502905, 1513843,
+                   1513876, 1516976, 1531601, 1544838, 1550023, 1562586, 1567198, 1586346, 1586369,
+                   1588986, 1590165, 1596977, 19013926, 19013951, 19090180, 19090187, 19090204,
+                   19090221, 19090226, 19090229, 19090244, 19090247, 19090249, 19091621, 35198096,
+                   35602717, 42899447, 46221581)
+  included_sql <- SqlRender::render(sql = "SELECT *
+                                           FROM @schema_cdm.CONCEPT_ANCESTOR
+                                           WHERE ancestor_concept_id IN (@diab_id)",
+                                    schema_cdm = cdmDatabaseSchema,
+                                    diab_id = vec_insulin)
+  included_id <- DatabaseConnector::querySql(connection,
+                                             sql = included_sql)
+  # Falta afegir la data de naixement a la cohort. S'ha de fer un INNER JOIN
+  # Some SQL to construct the covariate:
+  sql <- "SELECT DISTINCT ON (cond2.person_id)
+               cond2.person_id AS row_id,
+               201254217 AS covariate_id,
+               DATEDIFF(DAY, DATEFROMPARTS(cond2.year_of_birth, cond2.month_of_birth, cond2.day_of_birth),
+                        cond2.DRUG_EXPOSURE_START_DATE)/365.25 AS covariate_value
+        FROM (SELECT cond.person_id,
+                       cond.DRUG_EXPOSURE_START_DATE,
+                       person_table.year_of_birth,
+                       person_table.month_of_birth,
+                       person_table.day_of_birth
+              FROM @cdm_database_schema.DRUG_EXPOSURE cond
+              INNER JOIN @cohort_table cohort
+                    ON cohort.subject_id = cond.person_id
+                    INNER JOIN @cdm_database_schema.PERSON person_table
+                          ON person_table.person_id = cohort.subject_id
+              WHERE cond.DRUG_EXPOSURE_START_DATE <= DATEADD(DAY, 0, cohort.cohort_start_date)
+                  AND cond.DRUG_CONCEPT_ID != 0
+                  AND cond.DRUG_CONCEPT_ID IN (@included_concept_table)
+                  AND cohort.cohort_definition_id IN (@cohort_definition_id)) cond2
+          ORDER BY cond2.person_id, cond2.DRUG_EXPOSURE_START_DATE"
+  sql <- SqlRender::render(sql,
+                           cdm_database_schema = cdmDatabaseSchema,
+                           cohort_table = cohortTable, # ha de ser results_sc.cohortTable
+                           cohort_definition_id = cohortId,
+                           included_concept_table = included_id$DESCENDANT_CONCEPT_ID)
+  sql <- SqlRender::translate(sql, targetDialect = attr(connection, "dbms"))
+  # Retrieve the covariate:
+  covariates <- DatabaseConnector::querySql(connection, sql, snakeCaseToCamelCase = TRUE)
+  # Construct covariate reference:
+  covariateRef <- data.frame(covariateId = c(201254217),
+                             covariateName = c('Age from T1Rx'),
+                             analysisId = 217,
+                             conceptId = 201254)
+  # Construct analysis reference:
+  analysisRef <- data.frame(analysisId = 217,
+                            analysisName = "Age from T1Rx",
                             domainId = "Condition",
                             startDay = NA,
                             endDay = 0,
@@ -1408,20 +1682,20 @@ buildFollowUp <- function(cdm_bbdd,
                                                                  omopSc = cdm_schema,
                                                                  resultSc = results_sc,
                                                                  cohortTable = cohortTable))
-  # death_sql <- "SELECT * FROM @omopSc.DEATH
-  #               WHERE person_id IN (SELECT subject_id FROM @resultSc.@cohortTable)"
-  # death <- DatabaseConnector::querySql(connection = cdm_bbdd,
-  #                                      sql = SqlRender::render(sql = death_sql,
-  #                                                              omopSc = cdm_schema,
-  #                                                              resultSc = results_sc,
-  #                                                              cohortTable = cohortTable))
+  death_sql <- "SELECT * FROM @omopSc.DEATH
+                WHERE person_id IN (SELECT subject_id FROM @resultSc.@cohortTable)"
+  death <- DatabaseConnector::querySql(connection = cdm_bbdd,
+                                       sql = SqlRender::render(sql = death_sql,
+                                                               omopSc = cdm_schema,
+                                                               resultSc = results_sc,
+                                                               cohortTable = cohortTable))
 
   cohort <- DatabaseConnector::querySql(connection = cdm_bbdd,
                                         sql = SqlRender::render(sql = "SELECT * FROM @resultSc.@cohortTable",
                                                                 resultSc = results_sc,
                                                                 cohortTable = cohortTable))
 
-  cohort_event <- cohort[cohort$COHORT_DEFINITION_ID %in% c(acohortId, 3:10),]
+  cohort_event <- cohort[cohort$COHORT_DEFINITION_ID %in% c(acohortId, 3:18),]
   cohort_event$event <- as.character(NA)
   cohort_event$event[cohort_event$COHORT_DEFINITION_ID == acohortId] <- 'dintro'
   cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 3] <- 'AMI'
@@ -1432,6 +1706,14 @@ buildFollowUp <- function(cdm_bbdd,
   cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 8] <- 'Retinopathy'
   cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 9] <- 'Neuropathy'
   cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 10] <- 'PAD'
+  cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 11] <- 'Angor_unstable'
+  cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 12] <- 'AMI_WP4'
+  cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 13] <- 'stroke_WP4'
+  cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 14] <- 'neuroWP4'
+  cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 15] <- 'nephroWP4'
+  cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 16] <- 'retinoWP4'
+  cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 17] <- 'footWP4'
+  cohort_event$event[cohort_event$COHORT_DEFINITION_ID == 18] <- 'DKAWP4'
 
   cohort_event_w <- tidyr::pivot_wider(data = cohort_event,
                                        id_cols = "SUBJECT_ID",
@@ -1449,6 +1731,11 @@ buildFollowUp <- function(cdm_bbdd,
                       cohort_event_w,
                       by.x = 'rowId',
                       by.y = "SUBJECT_ID",
+                      all.x = TRUE)
+  bbdd_covar <- merge(bbdd_covar,
+                      death,
+                      by.x = 'rowId',
+                      by.y = "PERSON_ID",
                       all.x = TRUE)
   bbdd_covar$i.ep_AMI <- 0
   bbdd_covar$i.ep_AMI[bbdd_covar$dintro < bbdd_covar$ep_AMI &
@@ -1482,6 +1769,38 @@ buildFollowUp <- function(cdm_bbdd,
   bbdd_covar$i.ep_PAD[bbdd_covar$dintro < bbdd_covar$ep_PAD &
                                bbdd_covar$ep_PAD <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
   bbdd_covar$t.ep_PAD <- as.numeric(pmin(bbdd_covar$ep_PAD, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$i.ep_Angor_unstable <- 0
+  bbdd_covar$i.ep_Angor_unstable[bbdd_covar$dintro < bbdd_covar$ep_Angor_unstable &
+                                   bbdd_covar$ep_Angor_unstable <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
+  bbdd_covar$t.ep_Angor_unstable <- as.numeric(pmin(bbdd_covar$ep_Angor_unstable, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$i.ep_AMI_WP4 <- 0
+  bbdd_covar$i.ep_AMI_WP4[bbdd_covar$dintro < bbdd_covar$ep_AMI_WP4 &
+                            bbdd_covar$ep_AMI_WP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
+  bbdd_covar$t.ep_AMI_WP4 <- as.numeric(pmin(bbdd_covar$ep_AMI_WP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$i.ep_stroke_WP4 <- 0
+  bbdd_covar$i.ep_stroke_WP4[bbdd_covar$dintro < bbdd_covar$ep_stroke_WP4 &
+                            bbdd_covar$ep_stroke_WP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
+  bbdd_covar$t.ep_stroke_WP4 <- as.numeric(pmin(bbdd_covar$ep_stroke_WP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$i.ep_neuroWP4 <- 0
+  bbdd_covar$i.ep_neuroWP4[bbdd_covar$dintro < bbdd_covar$ep_neuroWP4 &
+                               bbdd_covar$ep_neuroWP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
+  bbdd_covar$t.ep_neuroWP4 <- as.numeric(pmin(bbdd_covar$ep_neuroWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$i.ep_nephroWP4 <- 0
+  bbdd_covar$i.ep_nephroWP4[bbdd_covar$dintro < bbdd_covar$ep_nephroWP4 &
+                             bbdd_covar$ep_nephroWP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
+  bbdd_covar$t.ep_nephroWP4 <- as.numeric(pmin(bbdd_covar$ep_nephroWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$i.ep_retinoWP4 <- 0
+  bbdd_covar$i.ep_retinoWP4[bbdd_covar$dintro < bbdd_covar$ep_retinoWP4 &
+                              bbdd_covar$ep_retinoWP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
+  bbdd_covar$t.ep_retinoWP4 <- as.numeric(pmin(bbdd_covar$ep_retinoWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$i.ep_footWP4 <- 0
+  bbdd_covar$i.ep_footWP4[bbdd_covar$dintro < bbdd_covar$ep_footWP4 &
+                              bbdd_covar$ep_footWP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
+  bbdd_covar$t.ep_footWP4 <- as.numeric(pmin(bbdd_covar$ep_footWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$i.ep_DKAWP4 <- 0
+  bbdd_covar$i.ep_DKAWP4[bbdd_covar$dintro < bbdd_covar$ep_DKAWP4 &
+                            bbdd_covar$ep_DKAWP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
+  bbdd_covar$t.ep_DKAWP4 <- as.numeric(pmin(bbdd_covar$ep_DKAWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
 
   return(bbdd_covar)
 }
@@ -1543,7 +1862,7 @@ getDbuseC10_TimeCovariateData <- function(connection,
   # Some SQL to construct the covariate:
   sql <- "SELECT DISTINCT ON (cond2.person_id)
                  cond2.person_id AS row_id,
-                 21601853212  AS covariate_id,
+                 21601853214  AS covariate_id,
                  DATEDIFF(DAY, cond2.DRUG_EXPOSURE_START_DATE, cond2.cohort_start_date) AS covariate_value
           FROM (SELECT *
                 FROM @cdm_database_schema.DRUG_EXPOSURE cond
@@ -1563,12 +1882,12 @@ getDbuseC10_TimeCovariateData <- function(connection,
   # Retrieve the covariate:
   covariates <- DatabaseConnector::querySql(connection, sql, snakeCaseToCamelCase = TRUE)
   # Construct covariate reference:
-  covariateRef <- data.frame(covariateId = c(21601853212),
+  covariateRef <- data.frame(covariateId = c(21601853214),
                              covariateName = c('Time from C10'),
-                             analysisId = 212,
+                             analysisId = 214,
                              conceptId = 21601853)
   # Construct analysis reference:
-  analysisRef <- data.frame(analysisId = 212,
+  analysisRef <- data.frame(analysisId = 214,
                             analysisName = "Time from C10",
                             domainId = "Condition",
                             startDay = NA,
@@ -1646,7 +1965,7 @@ getDbuseHTNRx_TimeCovariateData <- function(connection,
   # Some SQL to construct the covariate:
   sql <- "SELECT DISTINCT ON (cond2.person_id)
                  cond2.person_id AS row_id,
-                 21600381212  AS covariate_id,
+                 21600381215  AS covariate_id,
                  DATEDIFF(DAY, cond2.DRUG_EXPOSURE_START_DATE, cond2.cohort_start_date) AS covariate_value
           FROM (SELECT *
                 FROM @cdm_database_schema.DRUG_EXPOSURE cond
@@ -1666,12 +1985,12 @@ getDbuseHTNRx_TimeCovariateData <- function(connection,
   # Retrieve the covariate:
   covariates <- DatabaseConnector::querySql(connection, sql, snakeCaseToCamelCase = TRUE)
   # Construct covariate reference:
-  covariateRef <- data.frame(covariateId = c(21600381212),
+  covariateRef <- data.frame(covariateId = c(21600381215),
                              covariateName = c('Time from HTNRx'),
-                             analysisId = 212,
+                             analysisId = 215,
                              conceptId = 21600381)
   # Construct analysis reference:
-  analysisRef <- data.frame(analysisId = 212,
+  analysisRef <- data.frame(analysisId = 215,
                             analysisName = "Time from HTNRX",
                             domainId = "Condition",
                             startDay = NA,
@@ -1691,11 +2010,11 @@ getDbuseHTNRx_TimeCovariateData <- function(connection,
 #' Funcion para pasar del servidor a una tabla plana
 #' Necesita totes les coses del servidor més quina cohort volem contruir.
 #'
-#' @param acdm_bbdd A connection for a OMOP database via DatabaseConnector
-#' @param acdm_schema A name for OMOP schema
-#' @param aresults_sc A name for result schema
-#' @param acohortTable A name of the result cohort
-#' @param aacohortId A Cohort number
+#' @param cdm_bbdd A connection for a OMOP database via DatabaseConnector
+#' @param cdm_schema A name for OMOP schema
+#' @param results_sc A name for result schema
+#' @param cohortTable A name of the result cohort
+#' @param acohortId A Cohort number
 #'
 #' @return List with three objects: descriptive for numeric and category and database ready to analysis.
 #' @export
@@ -1712,6 +2031,59 @@ FunCovar <- function(cdm_bbdd,
                                  results_sc = results_sc,
                                  cohortTable = cohortTable,
                                  acohortId = acohortId)
+  covariateData_aux_temp <- covariateData_aux$covariateData_temp
+  covariateData_aux <- covariateData_aux$covariateData
+  # #Calculem el MPR pel T1DM i els eliminem si MPR inferior a 90%
+  # if (acohortId == 2){
+  #   sql_cohort <- "SELECT * FROM sophia_test.cohorttable WHERE cohort_definition_id = 2"
+  #   cohort <- DatabaseConnector::querySql(connection = cdm_bbdd,
+  #                                         sql = sql_cohort)
+  #   cohort$time_obs <- with(cohort, as.numeric(COHORT_END_DATE - COHORT_START_DATE + 1))
+  #   vec_insulin <- c(1596977, 19058398, 19078552, 19078559, 19095211, 19095212, 19112791, 19133793,
+  #                    19135264, 21076306, 21086042, 35410536, 35412958, 40051377, 40052768, 42479783,
+  #                    42481504, 42481541, 42899447, 42902356, 42902587, 42902742, 42902821, 42902945,
+  #                    42903059, 44058584, 46233969, 46234047, 46234234, 46234237, 1502905, 1513843,
+  #                    1513876, 1516976, 1531601, 1544838, 1550023, 1562586, 1567198, 1586346, 1586369,
+  #                    1588986, 1590165, 1596977, 19013926, 19013951, 19090180, 19090187, 19090204,
+  #                    19090221, 19090226, 19090229, 19090244, 19090247, 19090249, 19091621, 35198096,
+  #                    35602717, 42899447, 46221581)
+  #   sql_insulin <- "SELECT * FROM omop21t2_test.DRUG_ERA WHERE person_id IN (@id) AND DRUG_CONCEPT_ID IN (@insulin)"
+  #   insulin <- DatabaseConnector::querySql(connection = cdm_bbdd,
+  #                                          sql = SqlRender::render(sql_insulin,
+  #                                                                  id = cohort$SUBJECT_ID,
+  #                                                                  insulin = vec_insulin))
+  #   insulin_treat <- dplyr::arrange(.data = insulin,
+  #                                   PERSON_ID, DRUG_ERA_START_DATE)
+  #   n_prev <- pull(count(insulin_treat), n)
+  #   cond <- TRUE
+  #   while(cond){
+  #     insulin_treat <- group_by(insulin_treat, PERSON_ID)
+  #     insulin_treat <- mutate(insulin_treat,
+  #                             canvi = lag(DRUG_ERA_END_DATE) < DRUG_ERA_START_DATE,
+  #                             canvi = dplyr::if_else(is.na(canvi), FALSE, canvi),
+  #                             treat = cumsum(canvi))
+  #     insulin_treat <- group_by(insulin_treat, PERSON_ID, treat)
+  #     insulin_treat <- summarise(insulin_treat,
+  #                                DRUG_ERA_START_DATE = min(DRUG_ERA_START_DATE),
+  #                                DRUG_ERA_END_DATE = max(DRUG_ERA_END_DATE),
+  #                                .groups = 'drop')
+  #     n_act <- pull(count(insulin_treat), n)
+  #     # cat('Prev: ', n_prev, ' Act: ', n_act, '\n')
+  #     cond <- n_prev > n_act
+  #     n_prev <- n_act
+  #   }
+  #   insulin_treat <- mutate(insulin_treat,
+  #                           time = as.numeric(DRUG_ERA_END_DATE - DRUG_ERA_START_DATE + 1))
+  #   cohort <- dplyr::left_join(cohort,
+  #                              insulin_treat,
+  #                              by = c('SUBJECT_ID' = 'PERSON_ID'))
+  #   cohort$MPR <- with(cohort, time/time_obs)
+  #   cohort <- dplyr::filter(cohort, 0.75 < MPR)
+  #   covariateData_aux_temp <- dplyr::filter(covariateData_aux_temp,
+  #                                           rowId %in% cohort$SUBJECT_ID)
+  #   covariateData_aux <- dplyr::filter(covariateData_aux,
+  #                                      rowId %in% cohort$SUBJECT_ID)
+  # }
   covariateData2_aux <- FeatureExtraction::aggregateCovariates(covariateData_aux)
   sel_med_conceptId <- c(21600712, #DRUGS USED IN DIABETES
                          #Aquestes insulines no les troba
@@ -1752,7 +2124,8 @@ FunCovar <- function(cdm_bbdd,
     .data = cov_num_resum_aux,
     -.data$covariateId, -.data$analysisId, -.data$conceptId)
   cov_num_resum_aux <- dplyr::collect(x = cov_num_resum_aux)
-  bbdd_covar_aux <- transformToFlat(covariateData_aux)
+  bbdd_covar_aux <- transformToFlat(covariateData_aux,
+                                    covariateData_aux_temp)
   bbdd_covar_aux <- buildFollowUp(cdm_bbdd = cdm_bbdd,
                                   cdm_schema = cdm_schema,
                                   results_sc = results_sc,

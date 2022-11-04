@@ -4,10 +4,12 @@
 \alias{transformToFlat}
 \title{Transform covariateData object into FlatTable}
 \usage{
-transformToFlat(covariateData)
+transformToFlat(covariateData, covariateData_temp)
 }
 \arguments{
 \item{covariateData}{A covariateDate object}
+
+\item{covariateData_temp}{A Temporal covariateDate object}
 }
 \value{
 A data.table with the covariate data
