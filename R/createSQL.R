@@ -39,21 +39,15 @@ CreateSQL_T1DM <- function(cdm_bbdd,
     Name = "Type 1 Diabetes Diagnosis",
     includeDescendants = TRUE)
 
-  # Type 2 Diabetes segons Covid19CharacterizationCharybdis
-  # <-- S'ha de posar en l'ordre que et dóna el getConceptIdDetails
-  # conceptMapping <- Capr::createConceptMapping(
-  #   n = 9,
-  #   includeDescendants = rep(T, 9),      # <--
-  #   isExcluded = c(T, T, F, T, F, F, T, T, T)) # <--
-  # DMDx <- Capr::createConceptSetExpressionCustom(
-  #   conceptSet = Capr::getConceptIdDetails(conceptIds = c(201820, 442793, 443238,
-  #                                                         201254, 435216, 4058243, 40484648,
-  #                                                         #Afegit mirant atlas-phenotype
-  #                                                         195771, 761051), #diabetis secondaria
-  #                                          connection = cdm_bbdd,
-  #                                          vocabularyDatabaseSchema = cdm_schema),
-  #   Name = "Diabetes Diagnosis",
-  #   conceptMapping = conceptMapping)
+  # Any Diabetes
+  DMDx <- Capr::createConceptSetExpression(
+    conceptSet = Capr::getConceptIdDetails(conceptIds = c(201820, 442793, 443238,
+                                                          201254, 435216, 40484648, 40484649,
+                                                          201826, 443732, 40482801, 40485020),
+                                           connection = cdm_bbdd,
+                                           vocabularyDatabaseSchema = cdm_schema),
+    Name = "Diabetes Diagnosis",
+    includeDescendants = TRUE)
   # # arreglo errors del paquet
   # DMDx@ConceptSetExpression[[1]]@id <- uuid::UUIDgenerate()
   # Nova versio
@@ -228,6 +222,8 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   #NIADRx Drug Exposure Query
   NIADRxQuery <- Capr::createDrugExposure(conceptSetExpression = NIADRx)
   #DMDx Condition Occurrence Query
+  DMDxQuery <- Capr::createConditionOccurrence(conceptSetExpression = DMDx)
+  #DM2Dx Condition Occurrence Query
   DM2DxQuery <- Capr::createConditionOccurrence(conceptSetExpression = DM2Dx)
   #DMDx_hist Condition Occurrence Query
   # DMDx_histQuery <- Capr::createConditionOccurrence(conceptSetExpression = DMDx_hist)
@@ -305,7 +301,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   T1RxCount <- Capr::createCount(Query = T1RxQuery,
                                     Logic = "at_least",
                                     Count = 1,
-                                    Timeline = tlafte)
+                                    Timeline = tl1)
   T1RxGroup <- Capr::createGroup(Name = "Insulin after diagnosis",
                                  type = "ALL",
                                  criteriaList = list(T1RxCount))
@@ -321,8 +317,8 @@ CreateSQL_T1DM <- function(cdm_bbdd,
   noDM2DxCount <- Capr::createCount(Query = DM2DxQuery,
                                    Logic = "exactly",
                                    Count = 0L,
-                                   Timeline = tlafte)
-                                   # Timeline = tl1)
+                                   # Timeline = tlafte)
+                                   Timeline = tl1)
   noDM2DxGroup <- Capr::createGroup(Name = "No Diagnosis of Type 2 Diabetes",
                                     type = "ALL",
                                     criteriaList = list(noDM2DxCount))
@@ -404,9 +400,40 @@ CreateSQL_T1DM <- function(cdm_bbdd,
                                                type = "ALL",
                                                criteriaList = list(noSymptomsHyperglycaemiaDxCount))
 
+  #Path 1: diagnosis of T1DM
+  atLeast1DMDxCount <- Capr::createCount(Query = T1DxQuery,
+                                         Logic = "at_least",
+                                         Count = 1L,
+                                         Timeline = tl1)
+  Pathway_1_Group <- Capr::createGroup(
+    Name = "Pathway1",
+    Description = "T1MD",
+    type = "ALL",
+    criteriaList = list(atLeast1DMDxCount))
+  #Path 2: No DM and insulin
+  noDMDxCount <- Capr::createCount(Query = DMDxQuery,
+                                    Logic = "exactly",
+                                    Count = 0L,
+                                    Timeline = tl1)
+  noDM1DxCount <- Capr::createCount(Query = T1DxQuery,
+                                    Logic = "exactly",
+                                    Count = 0L,
+                                    Timeline = tl1)
+  Pathway_2_Group <- Capr::createGroup(
+    Name = "Pathway2",
+    Description = "No DM and Insulin",
+    type = "ALL",
+    criteriaList = list(noDMDxCount, noDM2DxCount, noDM1DxCount, T1RxCount))
+  Pathway_Group <- Capr::createGroup(
+    Name = "Case for T1DM using algorithm",
+    type = "ANY",
+    Groups = list(Pathway_1_Group, Pathway_2_Group)
+  )
+
   InclusionRules <- Capr::createInclusionRules(Name = "Inclusion Rules",
                                                Contents = list(#Age18AndOlderGroup,
                                                                # noDM2DxGroup,
+                                                               Pathway_Group,
                                                                T1RxGroup,
                                                                noNIADRxGroup,
                                                                noSecondDMDxGroup,

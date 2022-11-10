@@ -120,10 +120,8 @@ buildData <- function(cdm_bbdd,
                       domainConceptId = "condition_concept_id",
                       domainStartDate = "condition_start_date",
                       domainEndDate = "condition_start_date"),
-    includedCovariateConceptIds = c(201820, 442793, 443238),
-    addDescendantsToInclude = TRUE,
-    excludedCovariateConceptIds = c(201254, 435216, 4058243, 40484648,195771, 761051),
-    addDescendantsToExclude = TRUE)
+    includedCovariateConceptIds = c(201826, 443732, 40482801, 40485020),
+    addDescendantsToInclude = TRUE)
 
   obesity_vars <- FeatureExtraction::createAnalysisDetails(
     analysisId = 112,
@@ -1740,67 +1738,67 @@ buildFollowUp <- function(cdm_bbdd,
   bbdd_covar$i.ep_AMI <- 0
   bbdd_covar$i.ep_AMI[bbdd_covar$dintro < bbdd_covar$ep_AMI &
                         bbdd_covar$ep_AMI <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_AMI <- as.numeric(pmin(bbdd_covar$ep_AMI, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_AMI <- as.numeric(pmin(bbdd_covar$ep_AMI, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_Angor <- 0
   bbdd_covar$i.ep_Angor[bbdd_covar$dintro < bbdd_covar$ep_Angor &
                           bbdd_covar$ep_Angor <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_Angor <- as.numeric(pmin(bbdd_covar$ep_Angor, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_Angor <- as.numeric(pmin(bbdd_covar$ep_Angor, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_StrokeI <- 0
   bbdd_covar$i.ep_StrokeI[bbdd_covar$dintro < bbdd_covar$ep_StrokeI &
                             bbdd_covar$ep_StrokeI <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_StrokeI <- as.numeric(pmin(bbdd_covar$ep_StrokeI, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_StrokeI <- as.numeric(pmin(bbdd_covar$ep_StrokeI, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_TIA <- 0
   bbdd_covar$i.ep_TIA[bbdd_covar$dintro < bbdd_covar$ep_TIA &
                         bbdd_covar$ep_TIA <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_TIA <- as.numeric(pmin(bbdd_covar$ep_TIA, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_TIA <- as.numeric(pmin(bbdd_covar$ep_TIA, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_Nephropathy <- 0
   bbdd_covar$i.ep_Nephropathy[bbdd_covar$dintro < bbdd_covar$ep_Nephropathy &
                                 bbdd_covar$ep_Nephropathy <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_Nephropathy <- as.numeric(pmin(bbdd_covar$ep_Nephropathy, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_Nephropathy <- as.numeric(pmin(bbdd_covar$ep_Nephropathy, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_Retinopathy <- 0
   bbdd_covar$i.ep_Retinopathy[bbdd_covar$dintro < bbdd_covar$ep_Retinopathy &
                                 bbdd_covar$ep_Retinopathy <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_Retinopathy <- as.numeric(pmin(bbdd_covar$ep_Retinopathy, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_Retinopathy <- as.numeric(pmin(bbdd_covar$ep_Retinopathy, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_Neuropathy <- 0
   bbdd_covar$i.ep_Neuropathy[bbdd_covar$dintro < bbdd_covar$ep_Neuropathy &
                                 bbdd_covar$ep_Neuropathy <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_Neuropathy <- as.numeric(pmin(bbdd_covar$ep_Neuropathy, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_Neuropathy <- as.numeric(pmin(bbdd_covar$ep_Neuropathy, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_PAD <- 0
   bbdd_covar$i.ep_PAD[bbdd_covar$dintro < bbdd_covar$ep_PAD &
                                bbdd_covar$ep_PAD <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_PAD <- as.numeric(pmin(bbdd_covar$ep_PAD, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_PAD <- as.numeric(pmin(bbdd_covar$ep_PAD, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_Angor_unstable <- 0
   bbdd_covar$i.ep_Angor_unstable[bbdd_covar$dintro < bbdd_covar$ep_Angor_unstable &
                                    bbdd_covar$ep_Angor_unstable <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_Angor_unstable <- as.numeric(pmin(bbdd_covar$ep_Angor_unstable, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_Angor_unstable <- as.numeric(pmin(bbdd_covar$ep_Angor_unstable, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_AMI_WP4 <- 0
   bbdd_covar$i.ep_AMI_WP4[bbdd_covar$dintro < bbdd_covar$ep_AMI_WP4 &
                             bbdd_covar$ep_AMI_WP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_AMI_WP4 <- as.numeric(pmin(bbdd_covar$ep_AMI_WP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_AMI_WP4 <- as.numeric(pmin(bbdd_covar$ep_AMI_WP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_stroke_WP4 <- 0
   bbdd_covar$i.ep_stroke_WP4[bbdd_covar$dintro < bbdd_covar$ep_stroke_WP4 &
                             bbdd_covar$ep_stroke_WP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_stroke_WP4 <- as.numeric(pmin(bbdd_covar$ep_stroke_WP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_stroke_WP4 <- as.numeric(pmin(bbdd_covar$ep_stroke_WP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_neuroWP4 <- 0
   bbdd_covar$i.ep_neuroWP4[bbdd_covar$dintro < bbdd_covar$ep_neuroWP4 &
                                bbdd_covar$ep_neuroWP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_neuroWP4 <- as.numeric(pmin(bbdd_covar$ep_neuroWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_neuroWP4 <- as.numeric(pmin(bbdd_covar$ep_neuroWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_nephroWP4 <- 0
   bbdd_covar$i.ep_nephroWP4[bbdd_covar$dintro < bbdd_covar$ep_nephroWP4 &
                              bbdd_covar$ep_nephroWP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_nephroWP4 <- as.numeric(pmin(bbdd_covar$ep_nephroWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_nephroWP4 <- as.numeric(pmin(bbdd_covar$ep_nephroWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_retinoWP4 <- 0
   bbdd_covar$i.ep_retinoWP4[bbdd_covar$dintro < bbdd_covar$ep_retinoWP4 &
                               bbdd_covar$ep_retinoWP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_retinoWP4 <- as.numeric(pmin(bbdd_covar$ep_retinoWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_retinoWP4 <- as.numeric(pmin(bbdd_covar$ep_retinoWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_footWP4 <- 0
   bbdd_covar$i.ep_footWP4[bbdd_covar$dintro < bbdd_covar$ep_footWP4 &
                               bbdd_covar$ep_footWP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_footWP4 <- as.numeric(pmin(bbdd_covar$ep_footWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_footWP4 <- as.numeric(pmin(bbdd_covar$ep_footWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
   bbdd_covar$i.ep_DKAWP4 <- 0
   bbdd_covar$i.ep_DKAWP4[bbdd_covar$dintro < bbdd_covar$ep_DKAWP4 &
                             bbdd_covar$ep_DKAWP4 <= bbdd_covar$OBSERVATION_PERIOD_END_DATE] <- 1
-  bbdd_covar$t.ep_DKAWP4 <- as.numeric(pmin(bbdd_covar$ep_DKAWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)
+  bbdd_covar$t.ep_DKAWP4 <- as.numeric(pmin(bbdd_covar$ep_DKAWP4, bbdd_covar$OBSERVATION_PERIOD_END_DATE, na.rm = T) - bbdd_covar$dintro)/365.25
 
   return(bbdd_covar)
 }
