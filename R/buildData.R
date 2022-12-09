@@ -64,6 +64,7 @@ buildData <- function(cdm_bbdd,
   GGT_conceptId <- c(3026910)
   vitD_conceptId <- c(43055034)
   PEPTIDCs_conceptId <- c(3010084)
+  hemoglobin_conceptId <- c(3000963)
   covMeasValueLong <- FeatureExtraction::createCovariateSettings(
     useMeasurementValueLongTerm = TRUE,
     longTermStartDays = (-2)*365.25,
@@ -93,7 +94,8 @@ buildData <- function(cdm_bbdd,
       GOT_conceptId,
       GGT_conceptId,
       vitD_conceptId,
-      PEPTIDCs_conceptId),
+      PEPTIDCs_conceptId,
+      hemoglobin_conceptId),
     addDescendantsToInclude = TRUE)
   covMeasValue_lipid <- FeatureExtraction::createTemporalCovariateSettings(
     useMeasurementValue = TRUE,
@@ -961,6 +963,7 @@ transformToFlat <- function(covariateData,
     variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3026910, 'GGT', .data$variable),
     variable = dplyr::if_else(substr(.data$covariateId, 1, 8) == 43055034, 'vitD', .data$variable),
     variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3010084, 'PEPTIDCs', .data$variable),
+    variable = dplyr::if_else(substr(.data$covariateId, 1, 7) == 3000963, 'Hemoglobin', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 201820211, 'TimeT2DM', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 201254212, 'TimeT1DM', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 201254216, 'TimeT1Rx', .data$variable),
@@ -1005,7 +1008,8 @@ transformToFlat <- function(covariateData,
                                   'C10', 'M01A',
                                   'COPD', 'CKD', 'cancer', 'depress', 'htn', 'hf', 'liver', 'ra',
                                   'sleep_apnea', 'pcos',
-                                  "neuro", "nephro", "retino", "PAD")),
+                                  "neuro", "nephro", "retino", "PAD",
+                                  'ALT', 'Hemoglobin')),
                   ~ tidyr::replace_na(.x, 0)))
     # sex_female = dplyr::if_else(is.na(sex_female), 0, sex_female),
     # sex_male = dplyr::if_else(is.na(sex_male), 0, sex_male),
