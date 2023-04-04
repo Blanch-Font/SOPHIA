@@ -465,7 +465,7 @@ CreateSQL_T1DM <- function(cdm_bbdd,
     PrimaryCriteria = PrimaryCriteria,
     # AdditionalCriteria = AdditionalCriteria)#,
     InclusionRules = InclusionRules,
-    # CensoringCriteria = CensoringCriteria,
+    CensoringCriteria = CensoringCriteria,
     # EndStrategy = EsCovidDiag,
     CohortEra = cohortEra)
   # JSON
@@ -1061,7 +1061,7 @@ CreateSQL_T2DM <- function(cdm_bbdd,
     PrimaryCriteria = PrimaryCriteria,
     # AdditionalCriteria = AdditionalCriteria,
     InclusionRules = InclusionRules,
-    # CensoringCriteria = CensoringCriteria,
+    CensoringCriteria = CensoringCriteria,
     # EndStrategy = EsCovidDiag,
     CohortEra = cohortEra)
   # JSON
