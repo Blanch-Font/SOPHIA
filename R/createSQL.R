@@ -423,7 +423,8 @@ CreateSQL_T1DM <- function(cdm_bbdd,
     Name = "Pathway2",
     Description = "No DM and Insulin",
     type = "ALL",
-    criteriaList = list(noDMDxCount, noDM2DxCount, noDM1DxCount, T1RxCount))
+    # criteriaList = list(noDMDxCount, noDM2DxCount, noDM1DxCount, T1RxCount))
+    criteriaList = list(noDMDxCount, T1RxCount))
   Pathway_Group <- Capr::createGroup(
     Name = "Case for T1DM using algorithm",
     type = "ANY",
