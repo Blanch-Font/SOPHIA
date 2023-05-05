@@ -694,7 +694,15 @@ buildData <- function(cdm_bbdd,
                          21601744, #C08
                          21601782, #C09
                          21601853, #C10
-                         21603933 #M01A
+                         21603933, #M01A
+                         # Antiinflamatoris
+                         920458, 1103374, 1115008, 1118084, 1124300, 1125315, 1146810, 1150345,
+                         1153928, 1156378, 1177480, 1178663, 1185922, 1189754, 1518254, 19029393,
+                         19056874, 19110711,
+                         # Antiagregants
+                         1310149, 1325124, 19024063, 1301025, 1301065, 1308473, 1367571, 1436169,
+                         1112807, 1302398, 1322184, 1331270, 1350310, 19042778, 19047423, 19069107,
+                         40241186
   )
   covDrug <- FeatureExtraction::createCovariateSettings(
     useDrugGroupEraMediumTerm = TRUE,
@@ -896,6 +904,12 @@ buildData <- function(cdm_bbdd,
 #' #Not yet
 transformToFlat <- function(covariateData,
                             covariateData_temp){
+  vec_antiinflam <- c(920458, 1103374, 1115008, 1118084, 1124300, 1125315, 1146810, 1150345,
+                      1153928, 1156378, 1177480, 1178663, 1185922, 1189754, 1518254, 19029393,
+                      19056874, 19110711)*1000 + 411
+  vec_antiagregant <- c(1310149, 1325124, 19024063, 1301025, 1301065, 1308473, 1367571, 1436169,
+                        1112807, 1302398, 1322184, 1331270, 1350310, 19042778, 19047423, 19069107,
+                        40241186)*1000 + 411
   bbdd_covar <- dplyr::collect(covariateData$covariates)
   bbdd_covar <-  dplyr::mutate(
     .data = bbdd_covar,
@@ -937,6 +951,8 @@ transformToFlat <- function(covariateData,
     variable = dplyr::if_else(.data$covariateId == 21601782411, 'C09', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 21601853411, 'C10', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 21603933411, 'M01A', .data$variable),
+    variable = dplyr::if_else(.data$covariateId %in% vec_antiinflam, 'antiinflamatori', .data$variable),
+    variable = dplyr::if_else(.data$covariateId %in% vec_antiagregant, 'antiagregant', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 45879404, 'Never', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 45884037, 'Current', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 45883458, 'Former', .data$variable),
