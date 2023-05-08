@@ -631,7 +631,7 @@ buildData <- function(cdm_bbdd,
   dka_vars <- FeatureExtraction::createAnalysisDetails(
     analysisId = 132,
     sqlFileName = "DomainConcept.sql",
-    parameters = list(analysisId = 130,
+    parameters = list(analysisId = 132,
                       analysisName = "Neuropathy due to DM",
                       startDay = "anyTimePrior",
                       endDay = 0,
@@ -650,7 +650,7 @@ buildData <- function(cdm_bbdd,
   hypoglyc_vars <- FeatureExtraction::createAnalysisDetails(
     analysisId = 133,
     sqlFileName = "DomainConcept.sql",
-    parameters = list(analysisId = 130,
+    parameters = list(analysisId = 133,
                       analysisName = "Neuropathy due to DM",
                       startDay = "anyTimePrior",
                       endDay = 0,
@@ -663,6 +663,23 @@ buildData <- function(cdm_bbdd,
     includedCovariateConceptIds = c(45769876, #Hypoglycemia due to type 1 diabetes mellitus
                                     4228112 #Hypoglycemic coma due to type 1 diabetes mellitus
                                     ),
+    addDescendantsToInclude = FALSE)
+  
+  hypoglyc_vars <- FeatureExtraction::createAnalysisDetails(
+    analysisId = 134,
+    sqlFileName = "DomainConcept.sql",
+    parameters = list(analysisId = 134,
+                      analysisName = "Anaemia",
+                      startDay = "anyTimePrior",
+                      endDay = 0,
+                      subType = "all",
+                      domainId = "Condition",
+                      domainTable = "condition_occurrence",
+                      domainConceptId = "condition_concept_id",
+                      domainStartDate = "condition_start_date",
+                      domainEndDate = "condition_start_date"),
+    includedCovariateConceptIds = c(439777 #Anemia
+    ),
     addDescendantsToInclude = FALSE)
 
   A10_conceptId <- c(21600712,
@@ -940,6 +957,7 @@ transformToFlat <- function(covariateData,
     variable = dplyr::if_else(stringr::str_sub(.data$covariateId, start = -3L) == 131, 'PAD', .data$variable),
     variable = dplyr::if_else(stringr::str_sub(.data$covariateId, start = -3L) == 132, 'DKA', .data$variable),
     variable = dplyr::if_else(stringr::str_sub(.data$covariateId, start = -3L) == 133, 'Hypoglyc', .data$variable),
+    variable = dplyr::if_else(stringr::str_sub(.data$covariateId, start = -3L) == 134, 'Anaemia', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 21600712411, 'A10', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 21600713411, 'A10A', .data$variable),
     variable = dplyr::if_else(.data$covariateId == 21600744411, 'A10B', .data$variable),
